@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'FarmCalc - Calculator Costuri Agricole',
-  description: 'Calculează costurile per hectar pentru culturile tale. Grâu, porumb, floarea soarelui și multe altele.',
+  title: 'FarmCalc România - Calculator Costuri Agricole',
+  description: 'Calculează costurile per hectar pentru culturile tale. Aplicație pentru fermierii din România.',
 }
 
 export default function RootLayout({
