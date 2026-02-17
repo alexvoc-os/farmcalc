@@ -28,6 +28,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     setMessage('');
 
     try {
+      if (!supabase) {
+        throw new Error('Serviciul de autentificare nu este disponibil');
+      }
+
       if (mode === 'signup') {
         const { error } = await supabase.auth.signUp({
           email,
