@@ -26,12 +26,15 @@ export function calculeazaCosturi(cultura: Cultura): RezultatCalcul {
   const costTotal = costInputuri + costMecanizare + costManopera + costuriFixe;
 
   // Venit și marjă
-  const venitBrut = cultura.productie * cultura.pretVanzare;
+  const venitVanzare = cultura.productie * cultura.pretVanzare;
+  const venitSubventii = cultura.subventiePerHa || 0;
+  const venitBrut = venitVanzare + venitSubventii;
   const marjaBruta = venitBrut - costTotal;
   const marjaProcentuala = venitBrut > 0 ? (marjaBruta / venitBrut) * 100 : 0;
 
-  // Break-even (kg necesari pentru a acoperi costurile)
-  const breakEvenKg = cultura.pretVanzare > 0 ? costTotal / cultura.pretVanzare : 0;
+  // Break-even (kg necesari pentru a acoperi costurile, fără subvenții)
+  const costuriDeAcoperit = costTotal - venitSubventii;
+  const breakEvenKg = cultura.pretVanzare > 0 ? Math.max(0, costuriDeAcoperit / cultura.pretVanzare) : 0;
 
   return {
     costInputuri,
@@ -39,6 +42,8 @@ export function calculeazaCosturi(cultura: Cultura): RezultatCalcul {
     costManopera,
     costuriFixe,
     costTotal,
+    venitVanzare,
+    venitSubventii,
     venitBrut,
     marjaBruta,
     marjaProcentuala,

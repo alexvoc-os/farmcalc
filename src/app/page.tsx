@@ -131,6 +131,7 @@ const culturaDemo: Cultura = {
   ],
   productie: DEFAULTS_CULTURI['Grâu']?.productie || 5500,
   pretVanzare: DEFAULTS_CULTURI['Grâu']?.pretVanzare || 0.95,
+  subventiePerHa: 1200, // APIA + eco-scheme estimat
 };
 
 export default function Home() {

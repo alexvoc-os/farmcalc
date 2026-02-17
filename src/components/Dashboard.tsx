@@ -65,6 +65,25 @@ export default function Dashboard({ cultura }: DashboardProps) {
         />
       </div>
 
+      {/* Detalii venituri */}
+      <div className="card">
+        <h3 className="text-lg font-semibold mb-4">Structură Venituri / Hectar</h3>
+        <div className="space-y-3">
+          <CostBar
+            eticheta="Vânzare producție"
+            valoare={rezultat.venitVanzare}
+            total={rezultat.venitBrut}
+            culoare="bg-green-500"
+          />
+          <CostBar
+            eticheta="Subvenții (APIA, eco-scheme)"
+            valoare={rezultat.venitSubventii}
+            total={rezultat.venitBrut}
+            culoare="bg-emerald-400"
+          />
+        </div>
+      </div>
+
       {/* Detalii costuri */}
       <div className="card">
         <h3 className="text-lg font-semibold mb-4">Structură Costuri / Hectar</h3>

@@ -363,7 +363,7 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
 
       {/* Secțiune Producție și Vânzare */}
       <Sectiune
-        titlu="Producție și Vânzare"
+        titlu="Producție și Venituri"
         deschisa={sectiuniDeschise.productie}
         onToggle={() => toggleSectiune('productie')}
       >
@@ -388,6 +388,17 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
               className="input-field"
               placeholder="0.95"
             />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Subvenție (lei/ha)</label>
+            <input
+              type="number"
+              value={cultura.subventiePerHa || ''}
+              onChange={(e) => updateField('subventiePerHa', parseFloat(e.target.value) || 0)}
+              className="input-field"
+              placeholder="1200 (APIA + eco-scheme, etc.)"
+            />
+            <p className="text-xs text-gray-500 mt-1">Include: plata de bază APIA, eco-scheme, plăți redistributive, etc.</p>
           </div>
         </div>
       </Sectiune>

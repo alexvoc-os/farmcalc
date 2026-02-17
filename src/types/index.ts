@@ -8,6 +8,7 @@ export interface Cultura {
   costuriFixe: CostFix[];
   productie: number; // kg/ha
   pretVanzare: number; // lei/kg
+  subventiePerHa: number; // lei/ha (APIA, eco, etc.)
 }
 
 export interface Input {
@@ -48,6 +49,8 @@ export interface RezultatCalcul {
   costManopera: number;
   costuriFixe: number;
   costTotal: number;
+  venitVanzare: number;
+  venitSubventii: number;
   venitBrut: number;
   marjaBruta: number;
   marjaProcentuala: number;
