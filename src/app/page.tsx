@@ -152,8 +152,10 @@ export default function Home() {
       return;
     }
 
+    const client = supabase; // TypeScript knows this is not null
+
     const checkAuthAndLoad = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await client.auth.getUser();
       setUser(user);
 
       if (user) {
@@ -169,7 +171,7 @@ export default function Home() {
     checkAuthAndLoad();
 
     // Ascultă schimbările de autentificare
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = client.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         const culturiSalvate = await getCulturi();
