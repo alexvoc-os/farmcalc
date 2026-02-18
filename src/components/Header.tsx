@@ -20,35 +20,40 @@ export default function Header() {
     }
 
     const client = supabase; // TypeScript knows this is not null
+    let mounted = true;
 
-    // Verifică sesiunea curentă
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await client.auth.getSession();
-        if (error) {
-          console.error('Eroare la verificarea sesiunii:', error);
-          setUser(null);
-        } else {
-          setUser(session?.user ?? null);
-        }
-      } catch (err) {
-        console.error('Eroare la getSession:', err);
-        setUser(null);
-      } finally {
+    // Ascultă schimbările de autentificare - aceasta e sursa principală
+    const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+
+      setUser(session?.user ?? null);
+
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
         setLoading(false);
       }
-    };
-
-    checkSession();
-
-    // Ascultă schimbările de autentificare
-    const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
-      // Simplu: setăm user-ul din sesiune (null dacă nu există)
-      setUser(session?.user ?? null);
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Fallback timeout
+    const timeout = setTimeout(async () => {
+      if (!mounted || !loading) return;
+
+      try {
+        const { data: { session } } = await client.auth.getSession();
+        if (mounted) {
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Eroare la fallback getSession:', err);
+        if (mounted) setLoading(false);
+      }
+    }, 2000);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {

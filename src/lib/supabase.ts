@@ -16,5 +16,13 @@ const supabaseAnonKey =
 // Safe initialization - nu crashează la build dacă lipsesc variabilele
 export const supabase: SupabaseClient | null =
   supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
+    ? createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          storageKey: 'farmcalc-auth',
+          storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        },
+      })
     : null;

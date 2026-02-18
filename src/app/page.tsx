@@ -141,16 +141,22 @@ export default function Home() {
     }
 
     const client = supabase; // TypeScript knows this is not null
+    let mounted = true;
 
-    const loadUserData = async (user: any) => {
-      if (user) {
+    const loadUserData = async (currentUser: any) => {
+      if (!mounted) return;
+
+      if (currentUser) {
         try {
+          console.log('Loading data for user:', currentUser.email);
           const culturiSalvate = await getCulturi();
+          if (!mounted) return;
+
           if (culturiSalvate.length > 0) {
             setCulturi(culturiSalvate);
             setCulturaSelectata(culturiSalvate[0]);
+            console.log('Loaded', culturiSalvate.length, 'cultures');
           } else {
-            // Utilizator nou, fără culturi salvate
             setCulturi([]);
             setCulturaSelectata(culturaNoua());
           }
@@ -163,44 +169,52 @@ export default function Home() {
       }
     };
 
-    const checkAuthAndLoad = async () => {
-      try {
-        const { data: { session }, error } = await client.auth.getSession();
-        if (error) {
-          console.error('Eroare la verificarea sesiunii:', error);
-          setUser(null);
-        } else {
-          setUser(session?.user ?? null);
-          await loadUserData(session?.user);
-        }
-      } catch (err) {
-        console.error('Eroare la getSession:', err);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Ascultă schimbările de autentificare - aceasta e sursa principală
+    const { data: { subscription } } = client.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
 
-    checkAuthAndLoad();
-
-    // Ascultă schimbările de autentificare
-    const { data: { subscription } } = client.auth.onAuthStateChange(async (_event, session) => {
+      console.log('Auth event:', event, 'User:', session?.user?.email);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
 
-      // Încarcă datele dacă există user, altfel resetează
-      if (currentUser) {
-        await loadUserData(currentUser);
-      } else {
+      // La INITIAL_SESSION sau SIGNED_IN, încarcă datele
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (currentUser) {
+          await loadUserData(currentUser);
+        }
+        setLoading(false);
+      } else if (event === 'SIGNED_OUT') {
         setCulturi([]);
         setCulturaSelectata(culturaNoua());
         setHasChanges(false);
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Fallback: dacă nu primim INITIAL_SESSION în 2 secunde, verificăm manual
+    const timeout = setTimeout(async () => {
+      if (!mounted || !loading) return;
+
+      console.log('Fallback: checking session manually');
+      try {
+        const { data: { session } } = await client.auth.getSession();
+        if (!mounted) return;
+
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        await loadUserData(currentUser);
+      } catch (err) {
+        console.error('Eroare la fallback getSession:', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }, 2000);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Actualizează cultura curentă
