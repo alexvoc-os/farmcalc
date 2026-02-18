@@ -142,35 +142,62 @@ export default function Home() {
 
     const client = supabase; // TypeScript knows this is not null
 
-    const checkAuthAndLoad = async () => {
-      const { data: { user } } = await client.auth.getUser();
-      setUser(user);
-
+    const loadUserData = async (user: any) => {
       if (user) {
-        const culturiSalvate = await getCulturi();
-        if (culturiSalvate.length > 0) {
-          setCulturi(culturiSalvate);
-          setCulturaSelectata(culturiSalvate[0]);
-        }
-      }
-      setLoading(false);
-    };
-
-    checkAuthAndLoad();
-
-    // Ascultă schimbările de autentificare
-    const { data: { subscription } } = client.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const culturiSalvate = await getCulturi();
-        if (culturiSalvate.length > 0) {
-          setCulturi(culturiSalvate);
-          setCulturaSelectata(culturiSalvate[0]);
+        try {
+          const culturiSalvate = await getCulturi();
+          if (culturiSalvate.length > 0) {
+            setCulturi(culturiSalvate);
+            setCulturaSelectata(culturiSalvate[0]);
+          } else {
+            // Utilizator nou, fără culturi salvate
+            setCulturi([]);
+            setCulturaSelectata(culturaNoua());
+          }
+        } catch (err) {
+          console.error('Eroare la încărcarea culturilor:', err);
         }
       } else {
         setCulturi([]);
         setCulturaSelectata(culturaNoua());
       }
+    };
+
+    const checkAuthAndLoad = async () => {
+      try {
+        const { data: { session }, error } = await client.auth.getSession();
+        if (error) {
+          console.error('Eroare la verificarea sesiunii:', error);
+          setUser(null);
+        } else {
+          setUser(session?.user ?? null);
+          await loadUserData(session?.user);
+        }
+      } catch (err) {
+        console.error('Eroare la getSession:', err);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuthAndLoad();
+
+    // Ascultă schimbările de autentificare
+    const { data: { subscription } } = client.auth.onAuthStateChange(async (event, session) => {
+      console.log('Page auth event:', event);
+
+      setUser(session?.user ?? null);
+
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        await loadUserData(session?.user);
+      } else if (event === 'SIGNED_OUT') {
+        setCulturi([]);
+        setCulturaSelectata(culturaNoua());
+        setHasChanges(false);
+      }
+
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
