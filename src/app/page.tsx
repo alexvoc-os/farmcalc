@@ -184,14 +184,14 @@ export default function Home() {
     checkAuthAndLoad();
 
     // Ascultă schimbările de autentificare
-    const { data: { subscription } } = client.auth.onAuthStateChange(async (event, session) => {
-      console.log('Page auth event:', event);
+    const { data: { subscription } } = client.auth.onAuthStateChange(async (_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
 
-      setUser(session?.user ?? null);
-
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        await loadUserData(session?.user);
-      } else if (event === 'SIGNED_OUT') {
+      // Încarcă datele dacă există user, altfel resetează
+      if (currentUser) {
+        await loadUserData(currentUser);
+      } else {
         setCulturi([]);
         setCulturaSelectata(culturaNoua());
         setHasChanges(false);
