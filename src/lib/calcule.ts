@@ -1,18 +1,37 @@
 import { Cultura, RezultatCalcul, Input, Mecanizare, Manopera, CostFix } from '@/types';
 
 export function calculeazaCosturi(cultura: Cultura): RezultatCalcul {
-  // Costuri inputuri per hectar
+  // Costuri inputuri separate per hectar
   const costInputuri = cultura.inputuri.reduce((total, input) => {
     return total + (input.cantitatePerHa * input.pretUnitar);
   }, 0);
 
-  // Costuri mecanizare per hectar
-  const costMecanizare = cultura.mecanizare.reduce((total, mec) => {
-    const costMotorina = mec.consumMotorina * mec.pretMotorina;
-    return total + costMotorina + mec.costReparatii;
-  }, 0);
+  // Calcule detaliate mecanizare
+  let totalConsumMotorina = 0;
+  let totalCostMotorina = 0;
+  let totalRetributii = 0;
+  let totalMaterialeOperatiuni = 0;
 
-  // Costuri manoperă per hectar
+  cultura.mecanizare.forEach((mec) => {
+    // Motorină
+    totalConsumMotorina += mec.consumMotorina || 0;
+    totalCostMotorina += (mec.consumMotorina || 0) * (mec.pretMotorina || 0);
+
+    // Retribuții/manoperă per operațiune
+    totalRetributii += mec.retributii || 0;
+
+    // Materiale legate de operațiune
+    if (mec.materiale && mec.materiale.length > 0) {
+      mec.materiale.forEach((mat) => {
+        totalMaterialeOperatiuni += (mat.cantitate || 0) * (mat.pretUnitar || 0);
+      });
+    }
+  });
+
+  // Cost total mecanizare = motorină + retribuții + materiale operațiuni
+  const costMecanizare = totalCostMotorina + totalRetributii + totalMaterialeOperatiuni;
+
+  // Costuri manoperă suplimentară (cea separată, nu din operațiuni)
   const costManopera = cultura.manopera.reduce((total, man) => {
     return total + (man.orePerHa * man.costOrar);
   }, 0);
@@ -42,6 +61,12 @@ export function calculeazaCosturi(cultura: Cultura): RezultatCalcul {
     costManopera,
     costuriFixe,
     costTotal,
+    // Detalii mecanizare
+    totalConsumMotorina,
+    totalCostMotorina,
+    totalRetributii,
+    totalMaterialeOperatiuni,
+    // Venituri
     venitVanzare,
     venitSubventii,
     venitBrut,

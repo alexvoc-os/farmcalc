@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Cultura, Input, Mecanizare, Manopera, CostFix, CULTURI_PREDEFINITE, CATEGORII_INPUT } from '@/types';
+import { Cultura, Input, Mecanizare, Manopera, CostFix, MaterialOperatiune, CULTURI_PREDEFINITE, CATEGORII_INPUT } from '@/types';
 import { genereazaId, DEFAULTS_CULTURI } from '@/lib/calcule';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -57,9 +57,9 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
       id: genereazaId(),
       operatiune: '',
       consumMotorina: 0,
-      pretMotorina: 7.5,
-      oreLucru: 0,
-      costReparatii: 0,
+      pretMotorina: 8.0,
+      retributii: 0,
+      materiale: [],
     };
     updateField('mecanizare', [...cultura.mecanizare, nou]);
   };
@@ -72,6 +72,43 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
 
   const stergeMecanizare = (id: string) => {
     updateField('mecanizare', cultura.mecanizare.filter(m => m.id !== id));
+  };
+
+  // Material handlers pentru operațiuni
+  const adaugaMaterialLaOperatiune = (operatiuneId: string) => {
+    const nouMaterial: MaterialOperatiune = {
+      id: genereazaId(),
+      denumire: '',
+      um: 'kg',
+      cantitate: 0,
+      pretUnitar: 0,
+    };
+    updateField('mecanizare', cultura.mecanizare.map(m =>
+      m.id === operatiuneId
+        ? { ...m, materiale: [...(m.materiale || []), nouMaterial] }
+        : m
+    ));
+  };
+
+  const actualizeazaMaterial = (operatiuneId: string, materialId: string, changes: Partial<MaterialOperatiune>) => {
+    updateField('mecanizare', cultura.mecanizare.map(m =>
+      m.id === operatiuneId
+        ? {
+            ...m,
+            materiale: (m.materiale || []).map(mat =>
+              mat.id === materialId ? { ...mat, ...changes } : mat
+            )
+          }
+        : m
+    ));
+  };
+
+  const stergeMaterial = (operatiuneId: string, materialId: string) => {
+    updateField('mecanizare', cultura.mecanizare.map(m =>
+      m.id === operatiuneId
+        ? { ...m, materiale: (m.materiale || []).filter(mat => mat.id !== materialId) }
+        : m
+    ));
   };
 
   // Manopera handlers
@@ -214,53 +251,125 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
         </div>
       </Sectiune>
 
-      {/* Secțiune Mecanizare */}
+      {/* Secțiune Lucrări/Operațiuni */}
       <Sectiune
-        titlu={`Mecanizare (${cultura.mecanizare.length})`}
+        titlu={`Lucrări Agricole (${cultura.mecanizare.length})`}
         deschisa={sectiuniDeschise.mecanizare}
         onToggle={() => toggleSectiune('mecanizare')}
       >
-        <div className="space-y-3">
-          {cultura.mecanizare.map((mec) => (
-            <div key={mec.id} className="flex gap-2 items-start p-3 bg-gray-50 rounded-lg">
-              <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2">
-                <input
-                  type="text"
-                  value={mec.operatiune}
-                  onChange={(e) => actualizeazaMecanizare(mec.id, { operatiune: e.target.value })}
-                  className="input-field"
-                  placeholder="Operațiune (ex: Arat)"
-                />
-                <input
-                  type="number"
-                  value={mec.consumMotorina || ''}
-                  onChange={(e) => actualizeazaMecanizare(mec.id, { consumMotorina: parseFloat(e.target.value) || 0 })}
-                  className="input-field"
-                  placeholder="Litri/ha"
-                />
-                <input
-                  type="number"
-                  value={mec.pretMotorina || ''}
-                  onChange={(e) => actualizeazaMecanizare(mec.id, { pretMotorina: parseFloat(e.target.value) || 0 })}
-                  className="input-field"
-                  placeholder="Preț motorină"
-                />
-                <input
-                  type="number"
-                  value={mec.costReparatii || ''}
-                  onChange={(e) => actualizeazaMecanizare(mec.id, { costReparatii: parseFloat(e.target.value) || 0 })}
-                  className="input-field"
-                  placeholder="Reparații/ha"
-                />
+        <div className="space-y-4">
+          {cultura.mecanizare.map((mec) => {
+            const costMotorina = (mec.consumMotorina || 0) * (mec.pretMotorina || 0);
+            const costMateriale = (mec.materiale || []).reduce((sum, m) => sum + (m.cantitate || 0) * (m.pretUnitar || 0), 0);
+            const totalOperatiune = costMotorina + (mec.retributii || 0) + costMateriale;
+
+            return (
+              <div key={mec.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                {/* Header operațiune */}
+                <div className="bg-gray-50 p-3">
+                  <div className="flex gap-2 items-start">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-2">
+                      <input
+                        type="text"
+                        value={mec.operatiune}
+                        onChange={(e) => actualizeazaMecanizare(mec.id, { operatiune: e.target.value })}
+                        className="input-field md:col-span-2"
+                        placeholder="Denumire operațiune"
+                      />
+                      <input
+                        type="number"
+                        value={mec.consumMotorina || ''}
+                        onChange={(e) => actualizeazaMecanizare(mec.id, { consumMotorina: parseFloat(e.target.value) || 0 })}
+                        className="input-field"
+                        placeholder="Consum (L/ha)"
+                      />
+                      <input
+                        type="number"
+                        value={mec.pretMotorina || ''}
+                        onChange={(e) => actualizeazaMecanizare(mec.id, { pretMotorina: parseFloat(e.target.value) || 0 })}
+                        className="input-field"
+                        placeholder="Preț motorină"
+                      />
+                      <input
+                        type="number"
+                        value={mec.retributii || ''}
+                        onChange={(e) => actualizeazaMecanizare(mec.id, { retributii: parseFloat(e.target.value) || 0 })}
+                        className="input-field"
+                        placeholder="Retribuții (lei/ha)"
+                      />
+                    </div>
+                    <button
+                      onClick={() => stergeMecanizare(mec.id)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded flex-shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-600 flex gap-4">
+                    <span>Cost motorină: {costMotorina.toFixed(0)} lei</span>
+                    <span>|</span>
+                    <span className="font-medium">Total operațiune: {totalOperatiune.toFixed(0)} lei/ha</span>
+                  </div>
+                </div>
+
+                {/* Materiale pentru operațiune */}
+                <div className="p-3 bg-white">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Materiale folosite:</p>
+                  {(mec.materiale || []).length > 0 && (
+                    <div className="space-y-2 mb-2">
+                      {(mec.materiale || []).map((mat) => (
+                        <div key={mat.id} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            value={mat.denumire}
+                            onChange={(e) => actualizeazaMaterial(mec.id, mat.id, { denumire: e.target.value })}
+                            className="input-field flex-1"
+                            placeholder="Denumire material"
+                          />
+                          <input
+                            type="text"
+                            value={mat.um}
+                            onChange={(e) => actualizeazaMaterial(mec.id, mat.id, { um: e.target.value })}
+                            className="input-field w-16"
+                            placeholder="UM"
+                          />
+                          <input
+                            type="number"
+                            value={mat.cantitate || ''}
+                            onChange={(e) => actualizeazaMaterial(mec.id, mat.id, { cantitate: parseFloat(e.target.value) || 0 })}
+                            className="input-field w-24"
+                            placeholder="Cantitate"
+                          />
+                          <input
+                            type="number"
+                            value={mat.pretUnitar || ''}
+                            onChange={(e) => actualizeazaMaterial(mec.id, mat.id, { pretUnitar: parseFloat(e.target.value) || 0 })}
+                            className="input-field w-24"
+                            placeholder="Preț/unit"
+                          />
+                          <span className="text-sm text-gray-600 w-20 text-right">
+                            {((mat.cantitate || 0) * (mat.pretUnitar || 0)).toFixed(0)} lei
+                          </span>
+                          <button
+                            onClick={() => stergeMaterial(mec.id, mat.id)}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => adaugaMaterialLaOperatiune(mec.id)}
+                    className="text-sm text-farm-green-600 hover:text-farm-green-700 flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" /> Adaugă material
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => stergeMecanizare(mec.id)}
-                className="p-2 text-red-500 hover:bg-red-50 rounded"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
+            );
+          })}
           <button onClick={adaugaMecanizare} className="btn-secondary flex items-center gap-2">
             <Plus className="w-4 h-4" /> Adaugă operațiune
           </button>

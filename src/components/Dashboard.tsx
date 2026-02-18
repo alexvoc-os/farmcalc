@@ -89,19 +89,19 @@ export default function Dashboard({ cultura }: DashboardProps) {
         <h3 className="text-lg font-semibold mb-4">Structură Costuri / Hectar</h3>
         <div className="space-y-3">
           <CostBar
-            eticheta="Inputuri (semințe, îngrășăminte, pesticide)"
+            eticheta="Inputuri separate"
             valoare={rezultat.costInputuri}
             total={rezultat.costTotal}
             culoare="bg-blue-500"
           />
           <CostBar
-            eticheta="Mecanizare (motorină, reparații)"
+            eticheta="Lucrări agricole (total)"
             valoare={rezultat.costMecanizare}
             total={rezultat.costTotal}
             culoare="bg-amber-500"
           />
           <CostBar
-            eticheta="Manoperă"
+            eticheta="Manoperă suplimentară"
             valoare={rezultat.costManopera}
             total={rezultat.costTotal}
             culoare="bg-purple-500"
@@ -112,6 +112,33 @@ export default function Dashboard({ cultura }: DashboardProps) {
             total={rezultat.costTotal}
             culoare="bg-gray-500"
           />
+        </div>
+      </div>
+
+      {/* Detalii lucrări agricole */}
+      <div className="card">
+        <h3 className="text-lg font-semibold mb-4">Detalii Lucrări Agricole / Hectar</h3>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between py-2 border-b">
+            <span className="text-gray-600">Consum motorină total:</span>
+            <span className="font-medium">{formateazaNumar(rezultat.totalConsumMotorina, 1)} litri</span>
+          </div>
+          <div className="flex justify-between py-2 border-b">
+            <span className="text-gray-600">Cost motorină:</span>
+            <span className="font-medium">{formateazaLei(rezultat.totalCostMotorina)}</span>
+          </div>
+          <div className="flex justify-between py-2 border-b">
+            <span className="text-gray-600">Retribuții/manoperă:</span>
+            <span className="font-medium">{formateazaLei(rezultat.totalRetributii)}</span>
+          </div>
+          <div className="flex justify-between py-2 border-b">
+            <span className="text-gray-600">Materiale operațiuni:</span>
+            <span className="font-medium">{formateazaLei(rezultat.totalMaterialeOperatiuni)}</span>
+          </div>
+          <div className="flex justify-between py-2 font-semibold text-base">
+            <span>Total lucrări:</span>
+            <span>{formateazaLei(rezultat.costMecanizare)}</span>
+          </div>
         </div>
       </div>
 
