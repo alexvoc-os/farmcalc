@@ -1,0 +1,7 @@
+# Controlul cache-ului pentru toate paginile
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Fișierele statice cu hash pot fi cache-uite
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
