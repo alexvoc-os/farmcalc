@@ -19,18 +19,30 @@ interface CulturaDB {
 }
 
 // Convertește din format DB în format aplicație
+// Include migrare automată pentru date vechi
 function fromDB(db: CulturaDB): Cultura {
+  // Migrează mecanizare din format vechi la format nou
+  const mecanizareMigrata = (db.mecanizare || []).map((mec: any) => ({
+    id: mec.id,
+    operatiune: mec.operatiune || '',
+    consumMotorina: mec.consumMotorina || 0,
+    pretMotorina: mec.pretMotorina || 8.0,
+    // Câmpuri noi - folosește valori existente sau default
+    retributii: mec.retributii ?? 0,
+    materiale: mec.materiale ?? [],
+  }));
+
   return {
     id: db.id,
     nume: db.nume,
     hectare: db.hectare,
-    inputuri: db.inputuri,
-    mecanizare: db.mecanizare,
-    manopera: db.manopera,
-    costuriFixe: db.costuri_fixe,
+    inputuri: db.inputuri || [],
+    mecanizare: mecanizareMigrata,
+    manopera: db.manopera || [],
+    costuriFixe: db.costuri_fixe || [],
     productie: db.productie,
     pretVanzare: db.pret_vanzare,
-    subventiePerHa: db.subventie_per_ha,
+    subventiePerHa: db.subventie_per_ha || 0,
   };
 }
 
