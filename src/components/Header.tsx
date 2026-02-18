@@ -42,17 +42,9 @@ export default function Header() {
     checkSession();
 
     // Ascultă schimbările de autentificare
-    const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
-      console.log('Auth event:', event);
-
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-        setUser(null);
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setUser(session?.user ?? null);
-      } else {
-        setUser(session?.user ?? null);
-      }
-
+    const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
+      // Simplu: setăm user-ul din sesiune (null dacă nu există)
+      setUser(session?.user ?? null);
       setLoading(false);
     });
 
