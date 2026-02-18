@@ -19,10 +19,12 @@ export default function Header() {
       return;
     }
 
+    const client = supabase; // TypeScript knows this is not null
+
     // Verifică sesiunea curentă
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error } = await client.auth.getSession();
         if (error) {
           console.error('Eroare la verificarea sesiunii:', error);
           setUser(null);
@@ -40,7 +42,7 @@ export default function Header() {
     checkSession();
 
     // Ascultă schimbările de autentificare
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
       console.log('Auth event:', event);
 
       if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
