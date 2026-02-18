@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import CookieConsent from '@/components/CookieConsent'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,6 +21,7 @@ export default function RootLayout({
         <div className="min-h-screen bg-gradient-to-br from-farm-green-50 to-farm-earth-50">
           {children}
         </div>
+        <CookieConsent />
       </body>
     </html>
   )
