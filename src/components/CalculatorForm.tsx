@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Cultura, Input, Mecanizare, Manopera, CostFix, MaterialOperatiune, CULTURI_PREDEFINITE, CATEGORII_INPUT } from '@/types';
 import { genereazaId, DEFAULTS_CULTURI } from '@/lib/calcule';
 import { Plus, Trash2, ChevronDown, ChevronUp, Wheat, Tractor, Users, Layers, TrendingUp } from 'lucide-react';
+import { getLucrari, getUtilaje, getImplementele, getLucrareById } from '@/lib/utilaje-service';
 
 interface CalculatorFormProps {
   cultura: Cultura;
@@ -229,7 +230,7 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                 {/* Header operațiune */}
                 <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4">
                   <div className="flex gap-3 items-start">
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-6 gap-3">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
                       <input
                         type="date"
                         value={mec.data || ''}
@@ -238,13 +239,46 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                         placeholder="Data"
                         title="Data lucrării"
                       />
-                      <input
-                        type="text"
-                        value={mec.operatiune}
-                        onChange={(e) => actualizeazaMecanizare(mec.id, { operatiune: e.target.value })}
-                        className="input-field md:col-span-2 font-medium"
-                        placeholder="Denumire operațiune"
-                      />
+                      <select
+                        value={mec.lucrareId || ''}
+                        onChange={(e) => {
+                          const lucrareId = e.target.value;
+                          const lucrare = getLucrareById(lucrareId);
+                          actualizeazaMecanizare(mec.id, {
+                            lucrareId,
+                            operatiune: lucrare?.nume || '', // Backward compatibility
+                          });
+                        }}
+                        className="input-field font-medium"
+                        title="Selectează lucrare agricolă"
+                      >
+                        <option value="">-- Lucrare --</option>
+                        {getLucrari().map(l => (
+                          <option key={l.id} value={l.id}>{l.nume}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={mec.utilajId || ''}
+                        onChange={(e) => actualizeazaMecanizare(mec.id, { utilajId: e.target.value })}
+                        className="input-field text-sm"
+                        title="Selectează tractor"
+                      >
+                        <option value="">-- Tractor --</option>
+                        {getUtilaje().map(u => (
+                          <option key={u.id} value={u.id}>{u.nume} ({u.putereCP} CP)</option>
+                        ))}
+                      </select>
+                      <select
+                        value={mec.implementId || ''}
+                        onChange={(e) => actualizeazaMecanizare(mec.id, { implementId: e.target.value })}
+                        className="input-field text-sm"
+                        title="Selectează implement"
+                      >
+                        <option value="">-- Implement --</option>
+                        {getImplementele().map(i => (
+                          <option key={i.id} value={i.id}>{i.nume}</option>
+                        ))}
+                      </select>
                       <input
                         type="number"
                         value={mec.consumMotorina || ''}
@@ -259,13 +293,6 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                         className="input-field"
                         placeholder="Preț motorină"
                       />
-                      <input
-                        type="number"
-                        value={mec.retributii || ''}
-                        onChange={(e) => actualizeazaMecanizare(mec.id, { retributii: parseFloat(e.target.value) || 0 })}
-                        className="input-field"
-                        placeholder="Retribuții (lei/ha)"
-                      />
                     </div>
                     <button
                       onClick={() => stergeMecanizare(mec.id)}
@@ -274,11 +301,19 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                    <span className="px-3 py-1 bg-white rounded-lg font-medium text-gray-700">
+                  <div className="mt-3 flex flex-wrap gap-3 items-center">
+                    <input
+                      type="number"
+                      value={mec.retributii || ''}
+                      onChange={(e) => actualizeazaMecanizare(mec.id, { retributii: parseFloat(e.target.value) || 0 })}
+                      className="input-field !py-2 w-32"
+                      placeholder="Retribuții (lei/ha)"
+                      title="Retribuții operator (lei/ha)"
+                    />
+                    <span className="px-3 py-1 bg-white rounded-lg font-medium text-gray-700 text-sm">
                       Motorină: <span className="text-amber-600">{costMotorina.toFixed(0)} lei</span>
                     </span>
-                    <span className="px-3 py-1 bg-amber-100 rounded-lg font-semibold text-amber-900">
+                    <span className="px-3 py-1 bg-amber-100 rounded-lg font-semibold text-amber-900 text-sm">
                       Total: {totalOperatiune.toFixed(0)} lei/ha
                     </span>
                   </div>

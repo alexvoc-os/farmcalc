@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import AuthModal from './AuthModal';
-import { Sprout, Calculator, RefreshCw, User, LogOut, Crown } from 'lucide-react';
+import { Sprout, Calculator, RefreshCw, User, LogOut, Crown, RotateCcw, Wrench } from 'lucide-react';
+import { clearStorageAndReload } from '@/lib/storage-manager';
 
 export default function Header() {
   const pathname = usePathname();
@@ -61,6 +62,7 @@ export default function Header() {
   const navLinks = [
     { href: '/', label: 'Calculator Costuri', icon: Calculator },
     { href: '/rotatie', label: 'Rotație Culturi', icon: RefreshCw },
+    { href: '/utilaje', label: 'Utilaje', icon: Wrench },
   ];
 
   return (
@@ -103,6 +105,16 @@ export default function Header() {
 
             {/* Auth buttons */}
             <div className="flex items-center gap-3">
+              {/* Clear Cache Button - întotdeauna vizibil */}
+              <button
+                onClick={clearStorageAndReload}
+                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary-600 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                title="Șterge cache-ul și reîncarcă aplicația"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span className="hidden lg:inline">Clear Cache</span>
+              </button>
+
               {loading ? (
                 <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
               ) : user ? (

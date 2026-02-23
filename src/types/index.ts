@@ -31,8 +31,14 @@ export interface MaterialOperatiune {
 
 export interface Mecanizare {
   id: string;
-  operatiune: string;
+  operatiune: string; // PĂSTRAT pentru compatibilitate cu date vechi
   data?: string; // format ISO "2024-05-15" (opțional)
+
+  // NOI - legături la entități din sistem de management
+  lucrareId?: string; // ID lucrare din listă predefinită
+  utilajId?: string; // ID tractor
+  implementId?: string; // ID implement
+
   consumMotorina: number; // litri/ha
   pretMotorina: number;
   retributii: number; // manopera/retribuții pentru această operațiune (lei/ha)
@@ -93,3 +99,39 @@ export const CATEGORII_INPUT: { value: CategorieInput; label: string }[] = [
   { value: 'fungicide', label: 'Fungicide' },
   { value: 'insecticide', label: 'Insecticide' },
 ];
+
+// === SISTEM MANAGEMENT UTILAJE ===
+
+// Lucrare agricolă predefinită (listă globală + custom per user)
+export interface LucrareAgricolaPredefinita {
+  id: string;
+  nume: string; // "Arat", "Semănat grâu", etc.
+  tip: 'camp' | 'tratament' | 'recoltare' | 'transport' | 'altele';
+  descriere?: string;
+  isGlobal: boolean; // true = predefinit, false = custom user
+  ordine: number; // pentru sortare în listă
+}
+
+// Tractor din fermă
+export interface Utilaj {
+  id: string;
+  nume: string; // "John Deere 6230"
+  marca: string; // "John Deere"
+  model: string; // "6230"
+  putereCP: number; // 230
+  anFabricatie: number; // 2018
+  consumMediuLOra?: number; // 12 L/h (opțional, pentru calcul automat viitor)
+  valoare?: number; // valoare de inventar (opțional)
+  isGlobal: boolean; // true = predefinit, false = custom user
+}
+
+// Implement agricol
+export interface Implement {
+  id: string;
+  nume: string; // "Plug reversibil 5 trupițe"
+  tip: 'plug' | 'disc' | 'semanatoare' | 'combinator' | 'tocator' | 'stropitoare' | 'combina' | 'altele';
+  latimeLucru?: number; // metri (opțional)
+  numarRanduri?: number; // pentru semănători, secerători (opțional)
+  greutate?: number; // kg - pentru calcul rezistență (opțional)
+  isGlobal: boolean; // true = predefinit, false = custom user
+}
