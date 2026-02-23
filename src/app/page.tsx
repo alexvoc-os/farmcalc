@@ -419,9 +419,9 @@ export default function Home() {
               © 2024 FarmCalc România. Calculator costuri agricole pentru fermieri.
             </p>
             <div className="flex gap-6">
-              <a href="#" className="text-gray-600 hover:text-agri-green-700 text-sm font-semibold transition-colors">Contact</a>
-              <a href="#" className="text-gray-600 hover:text-agri-green-700 text-sm font-semibold transition-colors">Termeni</a>
-              <a href="#" className="text-gray-600 hover:text-agri-green-700 text-sm font-semibold transition-colors">Confidențialitate</a>
+              <a href="#" className="text-gray-600 hover:text-primary-700 text-sm font-semibold transition-colors">Contact</a>
+              <a href="#" className="text-gray-600 hover:text-primary-700 text-sm font-semibold transition-colors">Termeni</a>
+              <a href="#" className="text-gray-600 hover:text-primary-700 text-sm font-semibold transition-colors">Confidențialitate</a>
             </div>
           </div>
         </div>

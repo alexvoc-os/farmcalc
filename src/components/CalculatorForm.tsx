@@ -225,7 +225,7 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
             const totalOperatiune = costMotorina + (mec.retributii || 0) + costMateriale;
 
             return (
-              <div key={mec.id} className="border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-agri-green-300 transition-colors">
+              <div key={mec.id} className="border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-primary-300 transition-colors">
                 {/* Header operațiune */}
                 <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4">
                   <div className="flex gap-3 items-start">
@@ -321,7 +321,7 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                             className="input-field w-24 !py-2"
                             placeholder="Preț/unit"
                           />
-                          <span className="text-sm font-bold text-agri-text w-24 text-right px-2">
+                          <span className="text-sm font-bold text-gray-900 w-24 text-right px-2">
                             {((mat.cantitate || 0) * (mat.pretUnitar || 0)).toFixed(0)} lei
                           </span>
                           <button
@@ -336,7 +336,7 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                   )}
                   <button
                     onClick={() => adaugaMaterialLaOperatiune(mec.id)}
-                    className="text-sm text-agri-green-700 hover:text-agri-green-800 font-semibold flex items-center gap-2 hover:bg-agri-green-50 px-3 py-2 rounded-lg transition-colors"
+                    className="text-sm text-primary-700 hover:text-primary-800 font-semibold flex items-center gap-2 hover:bg-primary-50 px-3 py-2 rounded-lg transition-colors"
                   >
                     <Plus className="w-4 h-4" /> Adaugă material
                   </button>
@@ -441,7 +441,7 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                       className="input-field !py-2"
                       placeholder="Preț/unit"
                     />
-                    <div className="text-sm font-bold text-agri-text flex items-center justify-center bg-agri-green-50 rounded-xl px-2">
+                    <div className="text-sm font-bold text-gray-900 flex items-center justify-center bg-primary-50 rounded-xl px-2">
                       = {(input.cantitatePerHa * input.pretUnitar).toFixed(0)} lei/ha
                     </div>
                   </div>
@@ -625,12 +625,12 @@ function Sectiune({
         className="w-full flex justify-between items-center text-left group"
       >
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-xl transition-colors ${deschisa ? 'bg-agri-green-700 text-white' : 'bg-gray-100 text-gray-600 group-hover:bg-agri-green-100 group-hover:text-agri-green-700'}`}>
+          <div className={`p-2 rounded-xl transition-colors ${deschisa ? 'bg-primary-700 text-white' : 'bg-gray-100 text-gray-600 group-hover:bg-primary-100 group-hover:text-primary-700'}`}>
             {icon}
           </div>
           <h3 className="section-heading">{titlu}</h3>
         </div>
-        <div className={`p-2 rounded-xl transition-colors ${deschisa ? 'bg-agri-green-100 text-agri-green-700' : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'}`}>
+        <div className={`p-2 rounded-xl transition-colors ${deschisa ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'}`}>
           {deschisa ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </div>
       </button>

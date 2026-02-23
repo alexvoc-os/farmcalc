@@ -28,16 +28,16 @@ export default function Dashboard({ cultura }: DashboardProps) {
   return (
     <div className="space-y-6">
       {/* Header cultura */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-agri-green-700 to-agri-green-900 p-6 shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-700 to-primary-900 p-6 shadow-lg">
         <div className="absolute top-0 right-0 opacity-10">
           <BarChart3 className="w-32 h-32" />
         </div>
         <div className="relative">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-agri-green-100 text-sm font-semibold mb-1">Cultură</p>
+              <p className="text-primary-100 text-sm font-semibold mb-1">Cultură</p>
               <h2 className="text-3xl font-bold text-white mb-2">{cultura.nume}</h2>
-              <p className="text-agri-green-100 font-medium">
+              <p className="text-primary-100 font-medium">
                 <span className="text-2xl font-bold text-white">{cultura.hectare}</span> hectare
               </p>
             </div>
@@ -51,7 +51,7 @@ export default function Dashboard({ cultura }: DashboardProps) {
               </div>
               <button
                 onClick={() => exportToExcel(cultura, rezultat)}
-                className="px-4 py-2 bg-white text-agri-green-700 rounded-xl font-semibold shadow-sm hover:bg-agri-green-50 transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-white text-primary-700 rounded-xl font-semibold shadow-sm hover:bg-primary-50 transition-colors flex items-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 Export Excel
@@ -218,21 +218,21 @@ export default function Dashboard({ cultura }: DashboardProps) {
       </div>
 
       {/* Total fermă */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-agri-green-600 via-agri-green-700 to-agri-green-800 p-6 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 p-6 shadow-xl">
         <div className="absolute top-0 right-0 opacity-10">
           <Target className="w-40 h-40" />
         </div>
         <div className="relative grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <p className="text-agri-green-100 text-sm font-semibold mb-1">Total Costuri Fermă</p>
-            <p className="text-agri-green-50 text-sm mb-1">{cultura.hectare} hectare</p>
+            <p className="text-primary-100 text-sm font-semibold mb-1">Total Costuri Fermă</p>
+            <p className="text-primary-50 text-sm mb-1">{cultura.hectare} hectare</p>
             <p className="text-4xl font-bold text-white">{formateazaLei(rezultat.costTotal * cultura.hectare)}</p>
           </div>
           <div className="text-left md:text-right">
-            <p className="text-agri-green-100 text-sm font-semibold mb-1">
+            <p className="text-primary-100 text-sm font-semibold mb-1">
               {isProfitabil ? 'Profit Estimat' : 'Pierdere Estimată'}
             </p>
-            <p className="text-agri-green-50 text-sm mb-1">Marjă: {formateazaProcent(rezultat.marjaProcentuala)}</p>
+            <p className="text-primary-50 text-sm mb-1">Marjă: {formateazaProcent(rezultat.marjaProcentuala)}</p>
             <p className={`text-4xl font-bold ${isProfitabil ? 'text-white' : 'text-red-200'}`}>
               {formateazaLei(rezultat.marjaBruta * cultura.hectare)}
             </p>
@@ -270,7 +270,7 @@ function KPICard({
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">{titlu}</p>
-          <p className="text-2xl font-bold text-agri-text mt-1">{valoare}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{valoare}</p>
           {subtitlu && <p className="text-sm text-gray-500 font-medium mt-1">{subtitlu}</p>}
         </div>
         <div className={`p-3 rounded-xl ${culoriMap[culoare]}`}>
@@ -303,7 +303,7 @@ function CostBar({
     <div>
       <div className="flex justify-between text-sm mb-2">
         <span className="text-gray-700 font-medium">{eticheta}</span>
-        <span className="font-bold text-agri-text">
+        <span className="font-bold text-gray-900">
           {formateazaLei(valoare)} <span className="text-gray-500 font-normal">({formateazaProcent(procent)})</span>
         </span>
       </div>

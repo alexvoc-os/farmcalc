@@ -19,24 +19,11 @@ export default function Header() {
       return;
     }
 
-    const client = supabase; // TypeScript knows this is not null
+    const client = supabase;
     let mounted = true;
 
-    // Ascultă schimbările de autentificare - aceasta e sursa principală
-    const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
-      if (!mounted) return;
-
-      setUser(session?.user ?? null);
-
-      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-        setLoading(false);
-      }
-    });
-
-    // Fallback timeout
-    const timeout = setTimeout(async () => {
-      if (!mounted || !loading) return;
-
+    // Verifică sesiunea curentă imediat
+    const init = async () => {
       try {
         const { data: { session } } = await client.auth.getSession();
         if (mounted) {
@@ -44,14 +31,22 @@ export default function Header() {
           setLoading(false);
         }
       } catch (err) {
-        console.error('Eroare la fallback getSession:', err);
+        console.error('Eroare la getSession:', err);
         if (mounted) setLoading(false);
       }
-    }, 2000);
+    };
+
+    init();
+
+    // Ascultă login/logout
+    const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
     return () => {
       mounted = false;
-      clearTimeout(timeout);
       subscription.unsubscribe();
     };
   }, []);
@@ -70,12 +65,12 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-white shadow-sm border-b border-gray-100">
+      <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40 backdrop-blur-sm bg-white/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <div className="bg-farm-green-600 p-2 rounded-lg">
+              <div className="bg-primary-500 p-2.5 rounded-xl transition-transform duration-200 hover:scale-105">
                 <Sprout className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -93,10 +88,10 @@ export default function Header() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-farm-green-100 text-farm-green-700'
-                        : 'text-gray-600 hover:bg-gray-100'
+                        ? 'bg-primary-50 text-primary-700 shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -123,7 +118,7 @@ export default function Header() {
                     <LogOut className="w-4 h-4" />
                     <span className="hidden sm:inline">Ieși</span>
                   </button>
-                  <button className="btn-primary text-sm flex items-center gap-1">
+                  <button className="bg-gradient-to-r from-accent-400 to-accent-500 hover:from-accent-500 hover:to-accent-600 text-white text-sm flex items-center gap-1.5 px-4 py-2 rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200">
                     <Crown className="w-4 h-4" />
                     <span className="hidden sm:inline">Premium</span>
                   </button>
@@ -156,10 +151,10 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                     isActive
-                      ? 'bg-farm-green-100 text-farm-green-700'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-primary-50 text-primary-700 shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
                   <Icon className="w-4 h-4" />

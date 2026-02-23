@@ -86,8 +86,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative border border-gray-100 animate-slideUp">
         {/* Close button */}
         <button
           onClick={onClose}
@@ -113,7 +113,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           type="button"
           onClick={handleGoogleSignIn}
           disabled={googleLoading}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200 hover:shadow-sm hover:border-gray-300"
         >
           {googleLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -208,7 +208,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary py-3 flex items-center justify-center gap-2"
+            className="w-full btn-primary py-3 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform duration-200"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {mode === 'login' ? 'Conectează-te' : 'Creează cont'}
@@ -222,7 +222,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               Nu ai cont?{' '}
               <button
                 onClick={() => setMode('signup')}
-                className="text-farm-green-600 font-medium hover:underline"
+                className="text-primary-600 font-semibold hover:text-primary-700 transition-colors duration-200"
               >
                 Înregistrează-te gratuit
               </button>
@@ -232,7 +232,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               Ai deja cont?{' '}
               <button
                 onClick={() => setMode('login')}
-                className="text-farm-green-600 font-medium hover:underline"
+                className="text-primary-600 font-semibold hover:text-primary-700 transition-colors duration-200"
               >
                 Conectează-te
               </button>

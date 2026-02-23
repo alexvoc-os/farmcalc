@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="ro">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gradient-to-br from-farm-green-50 to-farm-earth-50">
+        <div className="min-h-screen bg-[#f8f7f4]">
           {children}
         </div>
         <CookieConsent />
