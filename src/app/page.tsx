@@ -8,7 +8,8 @@ import { Cultura } from '@/types';
 import { genereazaId, DEFAULTS_CULTURI } from '@/lib/calcule';
 import { getCulturi, saveCultura, deleteCultura } from '@/lib/culturi-service';
 import { supabase } from '@/lib/supabase';
-import { Plus, Trash2, Save, Cloud, CloudOff, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Save, Cloud, CloudOff, Loader2, Sprout } from 'lucide-react';
+import TemplateModal from '@/components/TemplateModal';
 
 // Cultură demo cu date pre-populate
 const culturaNoua = (): Cultura => ({
@@ -132,6 +133,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
 
   // Verifică autentificarea și încarcă culturile
   useEffect(() => {
@@ -256,6 +258,12 @@ export default function Home() {
     setHasChanges(true);
   };
 
+  // Selectează template și creează cultură nouă
+  const handleSelectTemplate = (culturaTemplate: Cultura) => {
+    setCulturaSelectata(culturaTemplate);
+    setHasChanges(true);
+  };
+
   // Șterge cultura curentă
   const handleStergeCultura = async () => {
     if (!user || culturi.length === 0) return;
@@ -288,91 +296,108 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Toolbar pentru culturi */}
         {user && (
-          <div className="mb-6 flex flex-wrap items-center gap-3">
-            {/* Selector culturi */}
-            <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-              <select
-                value={culturaSelectata.id}
-                onChange={(e) => handleSelectCultura(e.target.value)}
-                className="input-field flex-1"
-              >
-                {culturi.length === 0 && (
-                  <option value={culturaSelectata.id}>Cultură nouă (nesalvată)</option>
-                )}
-                {culturi.map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.nume} - {c.hectare} ha
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Butoane acțiuni */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleAdaugaCultura}
-                className="btn-secondary flex items-center gap-1 text-sm"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Cultură nouă</span>
-              </button>
-
-              <button
-                onClick={handleSave}
-                disabled={saving || !hasChanges}
-                className={`btn-primary flex items-center gap-1 text-sm ${
-                  !hasChanges ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {saving ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4" />
-                )}
-                <span className="hidden sm:inline">Salvează</span>
-              </button>
-
-              {culturi.length > 0 && (
-                <button
-                  onClick={handleStergeCultura}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-                  title="Șterge cultura"
+          <div className="mb-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Selector culturi */}
+              <div className="flex items-center gap-2 flex-1 min-w-[240px]">
+                <select
+                  value={culturaSelectata.id}
+                  onChange={(e) => handleSelectCultura(e.target.value)}
+                  className="input-field flex-1 font-semibold"
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
-            </div>
+                  {culturi.length === 0 && (
+                    <option value={culturaSelectata.id}>Cultură nouă (nesalvată)</option>
+                  )}
+                  {culturi.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.nume} - {c.hectare} ha
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            {/* Status sincronizare */}
-            <div className="flex items-center gap-1 text-sm text-gray-500">
-              {hasChanges ? (
-                <>
-                  <CloudOff className="w-4 h-4 text-amber-500" />
-                  <span className="hidden sm:inline text-amber-600">Modificări nesalvate</span>
-                </>
-              ) : culturi.length > 0 ? (
-                <>
-                  <Cloud className="w-4 h-4 text-green-500" />
-                  <span className="hidden sm:inline text-green-600">Salvat în cloud</span>
-                </>
-              ) : null}
+              {/* Butoane acțiuni */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleAdaugaCultura}
+                  className="btn-secondary flex items-center gap-2 text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Cultură nouă</span>
+                </button>
+
+                <button
+                  onClick={() => setShowTemplateModal(true)}
+                  className="btn-primary flex items-center gap-2 text-sm"
+                >
+                  <Sprout className="w-4 h-4" />
+                  <span className="hidden sm:inline">Din template</span>
+                </button>
+
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !hasChanges}
+                  className={`btn-primary flex items-center gap-2 text-sm ${
+                    !hasChanges ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  <span className="hidden sm:inline">Salvează</span>
+                </button>
+
+                {culturi.length > 0 && (
+                  <button
+                    onClick={handleStergeCultura}
+                    className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                    title="Șterge cultura"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Status sincronizare */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl">
+                {hasChanges ? (
+                  <>
+                    <CloudOff className="w-4 h-4 text-amber-500" />
+                    <span className="hidden sm:inline text-sm font-semibold text-amber-700">Modificări nesalvate</span>
+                  </>
+                ) : culturi.length > 0 ? (
+                  <>
+                    <Cloud className="w-4 h-4 text-green-500" />
+                    <span className="hidden sm:inline text-sm font-semibold text-green-700">Salvat în cloud</span>
+                  </>
+                ) : null}
+              </div>
             </div>
           </div>
         )}
 
         {/* Mesaj pentru utilizatori neautentificați */}
         {!loading && !user && (
-          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
-            <strong>Sfat:</strong> Conectează-te pentru a salva culturile în cloud și a le accesa de pe orice dispozitiv.
+          <div className="mb-8 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-5 text-sm shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <Cloud className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-bold text-blue-900 mb-1">💡 Sfat pro</p>
+                <p className="text-blue-700 leading-relaxed">
+                  Conectează-te pentru a salva culturile în cloud și a le accesa de pe orice dispozitiv.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Coloana stânga - Formular */}
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              Date Cultură
-            </h2>
             <CalculatorForm
               cultura={culturaSelectata}
               onUpdate={handleUpdateCultura}
@@ -380,30 +405,34 @@ export default function Home() {
           </div>
 
           {/* Coloana dreapta - Dashboard */}
-          <div className="lg:sticky lg:top-8 lg:self-start">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              Rezultate Calcul
-            </h2>
+          <div className="lg:sticky lg:top-24 lg:self-start">
             <Dashboard cultura={culturaSelectata} />
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex justify-between items-center">
-            <p className="text-gray-500 text-sm">
-              © 2024 FarmCalc. Calculator costuri agricole pentru fermieri.
+      <footer className="border-t-2 border-gray-200 mt-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-gray-600 text-sm font-medium">
+              © 2024 FarmCalc România. Calculator costuri agricole pentru fermieri.
             </p>
-            <div className="flex gap-4">
-              <a href="#" className="text-gray-500 hover:text-gray-700 text-sm">Contact</a>
-              <a href="#" className="text-gray-500 hover:text-gray-700 text-sm">Termeni</a>
-              <a href="#" className="text-gray-500 hover:text-gray-700 text-sm">Confidențialitate</a>
+            <div className="flex gap-6">
+              <a href="#" className="text-gray-600 hover:text-agri-green-700 text-sm font-semibold transition-colors">Contact</a>
+              <a href="#" className="text-gray-600 hover:text-agri-green-700 text-sm font-semibold transition-colors">Termeni</a>
+              <a href="#" className="text-gray-600 hover:text-agri-green-700 text-sm font-semibold transition-colors">Confidențialitate</a>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Template Modal */}
+      <TemplateModal
+        isOpen={showTemplateModal}
+        onClose={() => setShowTemplateModal(false)}
+        onSelectTemplate={handleSelectTemplate}
+      />
     </div>
   );
 }

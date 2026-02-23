@@ -32,6 +32,7 @@ export interface MaterialOperatiune {
 export interface Mecanizare {
   id: string;
   operatiune: string;
+  data?: string; // format ISO "2024-05-15" (opțional)
   consumMotorina: number; // litri/ha
   pretMotorina: number;
   retributii: number; // manopera/retribuții pentru această operațiune (lei/ha)
