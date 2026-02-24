@@ -102,14 +102,14 @@ export const CATEGORII_INPUT: { value: CategorieInput; label: string }[] = [
 
 // === SISTEM MANAGEMENT UTILAJE ===
 
-// Lucrare agricolă predefinită (listă globală + custom per user)
+// Lucrare agricolă (compusă din utilaj + implement + consum)
 export interface LucrareAgricolaPredefinita {
   id: string;
-  nume: string; // "Arat", "Semănat grâu", etc.
-  tip: 'camp' | 'tratament' | 'recoltare' | 'transport' | 'altele';
-  descriere?: string;
-  isGlobal: boolean; // true = predefinit, false = custom user
-  ordine: number; // pentru sortare în listă
+  nume: string; // Generat automat: "Plug 5 trupițe + John Deere 6230"
+  utilajId: string; // ID tractor
+  implementId: string; // ID implement
+  consumMotorina: number; // litri/ha
+  descriere?: string; // Opțional - note suplimentare
 }
 
 // Tractor din fermă

@@ -21,8 +21,18 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
     productie: true,
   });
 
+  // State pentru detalii tehnice expandabile per operațiune
+  const [detaliiTehniceDeschise, setDetaliiTehniceDeschise] = useState<{[key: string]: boolean}>({});
+
   const toggleSectiune = (sectiune: keyof typeof sectiuniDeschise) => {
     setSectiuniDeschise(prev => ({ ...prev, [sectiune]: !prev[sectiune] }));
+  };
+
+  const toggleDetaliiTehnice = (operatiuneId: string) => {
+    setDetaliiTehniceDeschise(prev => ({
+      ...prev,
+      [operatiuneId]: !prev[operatiuneId]
+    }));
   };
 
   // Agregă toate materialele din operațiuni pentru afișare read-only
@@ -225,20 +235,29 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
             const costMateriale = (mec.materiale || []).reduce((sum, m) => sum + (m.cantitate || 0) * (m.pretUnitar || 0), 0);
             const totalOperatiune = costMotorina + (mec.retributii || 0) + costMateriale;
 
+            const lucrare = getLucrareById(mec.lucrareId || '');
+            const detaliiDeschise = detaliiTehniceDeschise[mec.id] || false;
+
             return (
-              <div key={mec.id} className="border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-primary-300 transition-colors">
-                {/* Header operațiune */}
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4">
-                  <div className="flex gap-3 items-start">
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div key={mec.id} className="border-2 border-green-200 rounded-2xl overflow-hidden hover:border-green-400 transition-all shadow-sm hover:shadow-md">
+                {/* NIVEL 1: Primary Info - Data, Lucrare, Cost Total (MARI ȘI VIZIBILE) */}
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5">
+                  <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+                    {/* Data - MARE și VIZIBILĂ */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">📅</span>
                       <input
                         type="date"
                         value={mec.data || ''}
                         onChange={(e) => actualizeazaMecanizare(mec.id, { data: e.target.value })}
-                        className="input-field text-sm"
-                        placeholder="Data"
+                        className="input-field text-lg font-bold px-4 py-3 w-48 border-2 border-green-300 focus:border-green-500"
                         title="Data lucrării"
                       />
+                    </div>
+
+                    {/* Tip Lucrare - DROPDOWN MARE */}
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="text-2xl">🚜</span>
                       <select
                         value={mec.lucrareId || ''}
                         onChange={(e) => {
@@ -246,134 +265,210 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                           const lucrare = getLucrareById(lucrareId);
                           actualizeazaMecanizare(mec.id, {
                             lucrareId,
-                            operatiune: lucrare?.nume || '', // Backward compatibility
+                            operatiune: lucrare?.nume || '',
                           });
                         }}
-                        className="input-field font-medium"
+                        className="input-field text-lg font-semibold px-4 py-3 flex-1 border-2 border-green-300 focus:border-green-500"
                         title="Selectează lucrare agricolă"
                       >
-                        <option value="">-- Lucrare --</option>
+                        <option value="">-- Selectează Lucrarea --</option>
                         {getLucrari().map(l => (
                           <option key={l.id} value={l.id}>{l.nume}</option>
                         ))}
                       </select>
-                      <select
-                        value={mec.utilajId || ''}
-                        onChange={(e) => actualizeazaMecanizare(mec.id, { utilajId: e.target.value })}
-                        className="input-field text-sm"
-                        title="Selectează tractor"
-                      >
-                        <option value="">-- Tractor --</option>
-                        {getUtilaje().map(u => (
-                          <option key={u.id} value={u.id}>{u.nume} ({u.putereCP} CP)</option>
-                        ))}
-                      </select>
-                      <select
-                        value={mec.implementId || ''}
-                        onChange={(e) => actualizeazaMecanizare(mec.id, { implementId: e.target.value })}
-                        className="input-field text-sm"
-                        title="Selectează implement"
-                      >
-                        <option value="">-- Implement --</option>
-                        {getImplementele().map(i => (
-                          <option key={i.id} value={i.id}>{i.nume}</option>
-                        ))}
-                      </select>
-                      <input
-                        type="number"
-                        value={mec.consumMotorina || ''}
-                        onChange={(e) => actualizeazaMecanizare(mec.id, { consumMotorina: parseFloat(e.target.value) || 0 })}
-                        className="input-field"
-                        placeholder="Consum (L/ha)"
-                      />
-                      <input
-                        type="number"
-                        value={mec.pretMotorina || ''}
-                        onChange={(e) => actualizeazaMecanizare(mec.id, { pretMotorina: parseFloat(e.target.value) || 0 })}
-                        className="input-field"
-                        placeholder="Preț motorină"
-                      />
                     </div>
-                    <button
-                      onClick={() => stergeMecanizare(mec.id)}
-                      className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl flex-shrink-0 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-3 items-center">
-                    <input
-                      type="number"
-                      value={mec.retributii || ''}
-                      onChange={(e) => actualizeazaMecanizare(mec.id, { retributii: parseFloat(e.target.value) || 0 })}
-                      className="input-field !py-2 w-32"
-                      placeholder="Retribuții (lei/ha)"
-                      title="Retribuții operator (lei/ha)"
-                    />
-                    <span className="px-3 py-1 bg-white rounded-lg font-medium text-gray-700 text-sm">
-                      Motorină: <span className="text-amber-600">{costMotorina.toFixed(0)} lei</span>
-                    </span>
-                    <span className="px-3 py-1 bg-amber-100 rounded-lg font-semibold text-amber-900 text-sm">
-                      Total: {totalOperatiune.toFixed(0)} lei/ha
-                    </span>
+
+                    {/* Cost Total - BADGE MARE VIZIBIL */}
+                    <div className="flex items-center gap-3">
+                      <div className="px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl shadow-md">
+                        <div className="text-xs font-semibold opacity-90 mb-0.5">💰 COST TOTAL</div>
+                        <div className="text-2xl font-bold">{totalOperatiune.toFixed(0)} lei/ha</div>
+                      </div>
+                      <button
+                        onClick={() => stergeMecanizare(mec.id)}
+                        className="p-3 text-red-600 hover:bg-red-50 rounded-xl flex-shrink-0 transition-colors"
+                        title="Șterge operațiunea"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Materiale pentru operațiune */}
-                <div className="p-4 bg-white">
-                  <p className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                    <Layers className="w-4 h-4" /> Materiale folosite:
-                  </p>
+                {/* NIVEL 2: Detalii Tehnice (COLLAPSIBLE - Secondary Info) */}
+                <div className="border-t-2 border-green-100">
+                  <button
+                    onClick={() => toggleDetaliiTehnice(mec.id)}
+                    className="w-full px-5 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between group"
+                  >
+                    <span className="flex items-center gap-2 font-semibold text-gray-700">
+                      <span className="text-lg">🔧</span>
+                      Detalii Tehnice (Tractor, Consum, etc.)
+                    </span>
+                    <span className={`transform transition-transform ${detaliiDeschise ? 'rotate-180' : ''}`}>
+                      <ChevronDown className="w-5 h-5 text-gray-600" />
+                    </span>
+                  </button>
+                  
+                  {detaliiDeschise && (
+                    <div className="p-5 bg-gray-50 space-y-3 transition-all duration-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-600 mb-1">Tractor</label>
+                          <select
+                            value={mec.utilajId || ''}
+                            onChange={(e) => actualizeazaMecanizare(mec.id, { utilajId: e.target.value })}
+                            className="input-field text-sm w-full"
+                            title="Selectează tractor"
+                          >
+                            <option value="">-- Tractor --</option>
+                            {getUtilaje().map(u => (
+                              <option key={u.id} value={u.id}>{u.nume} ({u.putereCP} CP)</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-600 mb-1">Implement</label>
+                          <select
+                            value={mec.implementId || ''}
+                            onChange={(e) => actualizeazaMecanizare(mec.id, { implementId: e.target.value })}
+                            className="input-field text-sm w-full"
+                            title="Selectează implement"
+                          >
+                            <option value="">-- Implement --</option>
+                            {getImplementele().map(i => (
+                              <option key={i.id} value={i.id}>{i.nume}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-600 mb-1">Consum Motorină (L/ha)</label>
+                          <input
+                            type="number"
+                            value={mec.consumMotorina || ''}
+                            onChange={(e) => actualizeazaMecanizare(mec.id, { consumMotorina: parseFloat(e.target.value) || 0 })}
+                            className="input-field w-full"
+                            placeholder="10"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-600 mb-1">Preț Motorină (lei/L)</label>
+                          <input
+                            type="number"
+                            value={mec.pretMotorina || ''}
+                            onChange={(e) => actualizeazaMecanizare(mec.id, { pretMotorina: parseFloat(e.target.value) || 0 })}
+                            className="input-field w-full"
+                            placeholder="8.0"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-600 mb-1">Retribuții Operator (lei/ha)</label>
+                          <input
+                            type="number"
+                            value={mec.retributii || ''}
+                            onChange={(e) => actualizeazaMecanizare(mec.id, { retributii: parseFloat(e.target.value) || 0 })}
+                            className="input-field w-full"
+                            placeholder="150"
+                          />
+                        </div>
+                        <div className="flex items-end">
+                          <div className="px-4 py-2.5 bg-amber-100 rounded-lg w-full">
+                            <div className="text-xs font-semibold text-amber-700">Cost Motorină</div>
+                            <div className="text-lg font-bold text-amber-900">{costMotorina.toFixed(0)} lei</div>
+                          </div>
+                        </div>
+                        <div className="flex items-end">
+                          <div className="px-4 py-2.5 bg-blue-100 rounded-lg w-full">
+                            <div className="text-xs font-semibold text-blue-700">Cost Retribuții</div>
+                            <div className="text-lg font-bold text-blue-900">{(mec.retributii || 0).toFixed(0)} lei</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* NIVEL 3: Materiale (TABEL LARG ȘI VIZIBIL) */}
+                <div className="p-5 bg-white border-t-2 border-amber-200">
+                  <h4 className="text-base font-bold text-amber-900 mb-4 flex items-center gap-2">
+                    <span className="text-xl">📦</span>
+                    Materiale folosite în această operațiune
+                  </h4>
+                  
                   {(mec.materiale || []).length > 0 && (
-                    <div className="space-y-2 mb-3">
+                    <div className="space-y-2 mb-4">
+                      {/* Header tabel */}
+                      <div className="hidden md:grid grid-cols-[2fr_80px_120px_120px_100px_50px] gap-3 px-3 py-2 bg-amber-50 rounded-lg text-xs font-bold text-amber-900 uppercase tracking-wide">
+                        <div>Denumire Material</div>
+                        <div className="text-center">UM</div>
+                        <div className="text-center">Cantitate</div>
+                        <div className="text-center">Preț/Unitate</div>
+                        <div className="text-right">Total</div>
+                        <div></div>
+                      </div>
+                      
+                      {/* Rânduri materiale */}
                       {(mec.materiale || []).map((mat) => (
-                        <div key={mat.id} className="flex gap-2 items-center bg-gray-50 p-2 rounded-xl">
+                        <div key={mat.id} className="grid grid-cols-1 md:grid-cols-[2fr_80px_120px_120px_100px_50px] gap-3 items-center p-3 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors">
                           <input
                             type="text"
                             value={mat.denumire}
                             onChange={(e) => actualizeazaMaterial(mec.id, mat.id, { denumire: e.target.value })}
-                            className="input-field flex-1 !py-2"
-                            placeholder="Denumire material"
+                            className="input-field font-medium text-base"
+                            placeholder="ex: Sămânță grâu certificată"
                           />
                           <input
                             type="text"
                             value={mat.um}
                             onChange={(e) => actualizeazaMaterial(mec.id, mat.id, { um: e.target.value })}
-                            className="input-field w-16 !py-2"
-                            placeholder="UM"
+                            className="input-field text-center font-medium"
+                            placeholder="kg"
                           />
                           <input
                             type="number"
                             value={mat.cantitate || ''}
                             onChange={(e) => actualizeazaMaterial(mec.id, mat.id, { cantitate: parseFloat(e.target.value) || 0 })}
-                            className="input-field w-24 !py-2"
-                            placeholder="Cantitate"
+                            className="input-field text-center font-semibold"
+                            placeholder="220"
                           />
                           <input
                             type="number"
+                            step="0.01"
                             value={mat.pretUnitar || ''}
                             onChange={(e) => actualizeazaMaterial(mec.id, mat.id, { pretUnitar: parseFloat(e.target.value) || 0 })}
-                            className="input-field w-24 !py-2"
-                            placeholder="Preț/unit"
+                            className="input-field text-center font-semibold"
+                            placeholder="2.50"
                           />
-                          <span className="text-sm font-bold text-gray-900 w-24 text-right px-2">
+                          <div className="text-right font-bold text-lg text-amber-900 px-2">
                             {((mat.cantitate || 0) * (mat.pretUnitar || 0)).toFixed(0)} lei
-                          </span>
+                          </div>
                           <button
                             onClick={() => stergeMaterial(mec.id, mat.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                            className="p-2.5 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                            title="Șterge material"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       ))}
+                      
+                      {/* Total materiale */}
+                      <div className="mt-3 pt-3 border-t-2 border-amber-300">
+                        <div className="flex justify-between items-center px-3">
+                          <span className="font-bold text-amber-900">Total Cost Materiale:</span>
+                          <span className="text-2xl font-bold text-amber-900">{costMateriale.toFixed(0)} lei/ha</span>
+                        </div>
+                      </div>
                     </div>
                   )}
+                  
                   <button
                     onClick={() => adaugaMaterialLaOperatiune(mec.id)}
-                    className="text-sm text-primary-700 hover:text-primary-800 font-semibold flex items-center gap-2 hover:bg-primary-50 px-3 py-2 rounded-lg transition-colors"
+                    className="btn-secondary w-full md:w-auto flex items-center justify-center gap-2 text-base px-6 py-3"
                   >
-                    <Plus className="w-4 h-4" /> Adaugă material
+                    <Plus className="w-5 h-5" /> Adaugă material
                   </button>
                 </div>
               </div>

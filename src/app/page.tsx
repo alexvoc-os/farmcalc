@@ -395,17 +395,18 @@ export default function Home() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          {/* Coloana stânga - Formular */}
-          <div>
+        {/* Layout vertical: Formular full-width apoi Dashboard full-width */}
+        <div className="space-y-8">
+          {/* Formular - Full width pentru mai mult spațiu la Lucrări Agricole */}
+          <div className="w-full">
             <CalculatorForm
               cultura={culturaSelectata}
               onUpdate={handleUpdateCultura}
             />
           </div>
 
-          {/* Coloana dreapta - Dashboard */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
+          {/* Dashboard - Full width dedesubt */}
+          <div className="w-full">
             <Dashboard cultura={culturaSelectata} />
           </div>
         </div>

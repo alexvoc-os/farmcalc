@@ -81,17 +81,29 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
   const handleAddLucrare = () => {
     const nou: LucrareAgricolaPredefinita = {
       id: genereazaId(),
-      nume: '',
-      tip: 'camp',
-      isGlobal: false,
-      ordine: lucrari.length + 1,
+      nume: '', // Va fi generat automat
+      utilajId: '',
+      implementId: '',
+      consumMotorina: 0,
     };
     setFormData(nou);
     setEditingId(nou.id);
   };
 
   const handleSaveLucrare = () => {
-    if (saveLucrare(formData)) {
+    // Generează numele automat din utilaj + implement
+    const utilaj = utilaje.find(u => u.id === formData.utilajId);
+    const implement = implementele.find(i => i.id === formData.implementId);
+
+    if (!utilaj || !implement) {
+      alert('Selectează tractorul și implementul!');
+      return;
+    }
+
+    const numeGenerat = `${implement.nume} + ${utilaj.nume}`;
+    const dataFinala = { ...formData, nume: numeGenerat };
+
+    if (saveLucrare(dataFinala)) {
       setEditingId(null);
       setFormData({});
       onRefresh();
@@ -127,7 +139,6 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Model</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Putere (CP)</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">An</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tip</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -140,32 +151,25 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
                     <td className="px-4 py-3">{utilaj.putereCP} CP</td>
                     <td className="px-4 py-3">{utilaj.anFabricatie}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        utilaj.isGlobal ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-                      }`}>
-                        {utilaj.isGlobal ? 'Predefinit' : 'Custom'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {!utilaj.isGlobal && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              setFormData(utilaj);
-                              setEditingId(utilaj.id);
-                            }}
-                            className="text-primary-600 hover:text-primary-700"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteUtilaj(utilaj.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setFormData(utilaj);
+                            setEditingId(utilaj.id);
+                          }}
+                          className="text-primary-600 hover:text-primary-700"
+                          title="Editează"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUtilaj(utilaj.id)}
+                          className="text-red-600 hover:text-red-700"
+                          title="Șterge"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -192,7 +196,6 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Nume</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tip</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Lățime lucru</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tip date</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -203,32 +206,25 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
                     <td className="px-4 py-3 capitalize">{impl.tip}</td>
                     <td className="px-4 py-3">{impl.latimeLucru ? `${impl.latimeLucru}m` : '-'}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        impl.isGlobal ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-                      }`}>
-                        {impl.isGlobal ? 'Predefinit' : 'Custom'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {!impl.isGlobal && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              setFormData(impl);
-                              setEditingId(impl.id);
-                            }}
-                            className="text-primary-600 hover:text-primary-700"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteImplement(impl.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setFormData(impl);
+                            setEditingId(impl.id);
+                          }}
+                          className="text-primary-600 hover:text-primary-700"
+                          title="Editează"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteImplement(impl.id)}
+                          className="text-red-600 hover:text-red-700"
+                          title="Șterge"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -252,28 +248,24 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Nume</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tip</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Descriere</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tip date</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Denumire</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tractor</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Implement</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Consum (L/ha)</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody>
-                {lucrari.map(lucr => (
-                  <tr key={lucr.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium">{lucr.nume}</td>
-                    <td className="px-4 py-3 capitalize">{lucr.tip}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{lucr.descriere || '-'}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        lucr.isGlobal ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-                      }`}>
-                        {lucr.isGlobal ? 'Predefinit' : 'Custom'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {!lucr.isGlobal && (
+                {lucrari.map(lucr => {
+                  const utilaj = utilaje.find(u => u.id === lucr.utilajId);
+                  const implement = implementele.find(i => i.id === lucr.implementId);
+                  return (
+                    <tr key={lucr.id} className="border-t hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium">{lucr.nume}</td>
+                      <td className="px-4 py-3 text-sm">{utilaj?.nume || '-'}</td>
+                      <td className="px-4 py-3 text-sm">{implement?.nume || '-'}</td>
+                      <td className="px-4 py-3 font-semibold text-amber-700">{lucr.consumMotorina} L/ha</td>
+                      <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <button
                             onClick={() => {
@@ -281,20 +273,22 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
                               setEditingId(lucr.id);
                             }}
                             className="text-primary-600 hover:text-primary-700"
+                            title="Editează"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteLucrare(lucr.id)}
                             className="text-red-600 hover:text-red-700"
+                            title="Șterge"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -306,9 +300,9 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold mb-4">
-              {activeTab === 'utilaje' && (formData.id && !formData.isGlobal ? 'Editează tractor' : 'Adaugă tractor nou')}
-              {activeTab === 'implementele' && (formData.id && !formData.isGlobal ? 'Editează implement' : 'Adaugă implement nou')}
-              {activeTab === 'lucrari' && (formData.id && !formData.isGlobal ? 'Editează lucrare' : 'Adaugă lucrare nouă')}
+              {activeTab === 'utilaje' && (utilaje.find(u => u.id === formData.id) ? 'Editează tractor' : 'Adaugă tractor nou')}
+              {activeTab === 'implementele' && (implementele.find(i => i.id === formData.id) ? 'Editează implement' : 'Adaugă implement nou')}
+              {activeTab === 'lucrari' && (lucrari.find(l => l.id === formData.id) ? 'Editează lucrare' : 'Adaugă lucrare nouă')}
             </h3>
 
             <div className="space-y-3">
@@ -390,31 +384,52 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
               {/* FORM LUCRĂRI */}
               {activeTab === 'lucrari' && (
                 <>
-                  <input
-                    type="text"
-                    value={formData.nume || ''}
-                    onChange={(e) => setFormData({ ...formData, nume: e.target.value })}
-                    placeholder="Nume lucrare"
-                    className="input-field"
-                  />
-                  <select
-                    value={formData.tip || 'camp'}
-                    onChange={(e) => setFormData({ ...formData, tip: e.target.value })}
-                    className="input-field"
-                  >
-                    <option value="camp">Lucrare de câmp</option>
-                    <option value="tratament">Tratament</option>
-                    <option value="recoltare">Recoltare</option>
-                    <option value="transport">Transport</option>
-                    <option value="altele">Altele</option>
-                  </select>
-                  <input
-                    type="text"
-                    value={formData.descriere || ''}
-                    onChange={(e) => setFormData({ ...formData, descriere: e.target.value })}
-                    placeholder="Descriere (opțional)"
-                    className="input-field"
-                  />
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Implement</label>
+                    <select
+                      value={formData.implementId || ''}
+                      onChange={(e) => setFormData({ ...formData, implementId: e.target.value })}
+                      className="input-field"
+                    >
+                      <option value="">-- Selectează implement --</option>
+                      {implementele.map(impl => (
+                        <option key={impl.id} value={impl.id}>{impl.nume}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tractor</label>
+                    <select
+                      value={formData.utilajId || ''}
+                      onChange={(e) => setFormData({ ...formData, utilajId: e.target.value })}
+                      className="input-field"
+                    >
+                      <option value="">-- Selectează tractor --</option>
+                      {utilaje.map(utilaj => (
+                        <option key={utilaj.id} value={utilaj.id}>{utilaj.nume} ({utilaj.putereCP} CP)</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Consum motorină (L/ha)</label>
+                    <input
+                      type="number"
+                      value={formData.consumMotorina || ''}
+                      onChange={(e) => setFormData({ ...formData, consumMotorina: parseFloat(e.target.value) || 0 })}
+                      placeholder="ex: 12"
+                      className="input-field"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Note (opțional)</label>
+                    <input
+                      type="text"
+                      value={formData.descriere || ''}
+                      onChange={(e) => setFormData({ ...formData, descriere: e.target.value })}
+                      placeholder="Note suplimentare..."
+                      className="input-field"
+                    />
+                  </div>
                 </>
               )}
             </div>

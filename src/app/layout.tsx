@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import CookieConsent from '@/components/CookieConsent'
+import StorageInitializer from '@/components/StorageInitializer'
+import StorageErrorBoundary from '@/components/StorageErrorBoundary'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,10 +20,13 @@ export default function RootLayout({
   return (
     <html lang="ro">
       <body className={inter.className}>
-        <div className="min-h-screen bg-[#f8f7f4]">
-          {children}
-        </div>
-        <CookieConsent />
+        <StorageErrorBoundary>
+          <StorageInitializer />
+          <div className="min-h-screen bg-[#f8f7f4]">
+            {children}
+          </div>
+          <CookieConsent />
+        </StorageErrorBoundary>
       </body>
     </html>
   )
