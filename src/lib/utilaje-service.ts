@@ -19,6 +19,11 @@ const STORAGE_KEY_LUCRARI = 'farmcalc_lucrari_custom';
  */
 export function getUtilaje(): Utilaj[] {
   try {
+    // Verifică dacă suntem pe client (browser)
+    if (typeof window === 'undefined') {
+      return [...TRACTOARE_PREDEFINITE];
+    }
+
     const customStr = localStorage.getItem(STORAGE_KEY_UTILAJE);
     const custom: Utilaj[] = customStr ? JSON.parse(customStr) : [];
 
@@ -35,6 +40,8 @@ export function getUtilaje(): Utilaj[] {
  */
 export function saveUtilaj(utilaj: Utilaj): boolean {
   try {
+    if (typeof window === 'undefined') return false;
+
     if (utilaj.isGlobal) {
       console.warn('Nu poți modifica utilaje predefinite');
       return false;
@@ -60,6 +67,8 @@ export function saveUtilaj(utilaj: Utilaj): boolean {
  */
 export function deleteUtilaj(id: string): boolean {
   try {
+    if (typeof window === 'undefined') return false;
+
     const utilaj = getUtilajById(id);
     if (utilaj?.isGlobal) {
       console.warn('Nu poți șterge utilaje predefinite');
@@ -82,6 +91,11 @@ export function deleteUtilaj(id: string): boolean {
  */
 export function getImplementele(): Implement[] {
   try {
+    // Verifică dacă suntem pe client (browser)
+    if (typeof window === 'undefined') {
+      return [...IMPLEMENTELE_PREDEFINITE];
+    }
+
     const customStr = localStorage.getItem(STORAGE_KEY_IMPLEMENTELE);
     const custom: Implement[] = customStr ? JSON.parse(customStr) : [];
 
@@ -97,6 +111,8 @@ export function getImplementele(): Implement[] {
  */
 export function saveImplement(implement: Implement): boolean {
   try {
+    if (typeof window === 'undefined') return false;
+
     if (implement.isGlobal) {
       console.warn('Nu poți modifica implementele predefinite');
       return false;
@@ -122,6 +138,8 @@ export function saveImplement(implement: Implement): boolean {
  */
 export function deleteImplement(id: string): boolean {
   try {
+    if (typeof window === 'undefined') return false;
+
     const implement = getImplementById(id);
     if (implement?.isGlobal) {
       console.warn('Nu poți șterge implementele predefinite');
@@ -144,6 +162,11 @@ export function deleteImplement(id: string): boolean {
  */
 export function getLucrari(): LucrareAgricolaPredefinita[] {
   try {
+    // Verifică dacă suntem pe client (browser)
+    if (typeof window === 'undefined') {
+      return [...LUCRARI_PREDEFINITE].sort((a, b) => a.ordine - b.ordine);
+    }
+
     const customStr = localStorage.getItem(STORAGE_KEY_LUCRARI);
     const custom: LucrareAgricolaPredefinita[] = customStr ? JSON.parse(customStr) : [];
 
@@ -161,6 +184,8 @@ export function getLucrari(): LucrareAgricolaPredefinita[] {
  */
 export function saveLucrare(lucrare: LucrareAgricolaPredefinita): boolean {
   try {
+    if (typeof window === 'undefined') return false;
+
     if (lucrare.isGlobal) {
       console.warn('Nu poți modifica lucrări predefinite');
       return false;
@@ -186,6 +211,8 @@ export function saveLucrare(lucrare: LucrareAgricolaPredefinita): boolean {
  */
 export function deleteLucrare(id: string): boolean {
   try {
+    if (typeof window === 'undefined') return false;
+
     const lucrare = getLucrareById(id);
     if (lucrare?.isGlobal) {
       console.warn('Nu poți șterge lucrări predefinite');
@@ -228,6 +255,8 @@ export function getLucrareById(id: string): LucrareAgricolaPredefinita | null {
  * Curăță toate datele custom (pentru reset/debug)
  */
 export function clearAllCustomData(): void {
+  if (typeof window === 'undefined') return;
+
   localStorage.removeItem(STORAGE_KEY_UTILAJE);
   localStorage.removeItem(STORAGE_KEY_IMPLEMENTELE);
   localStorage.removeItem(STORAGE_KEY_LUCRARI);
