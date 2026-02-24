@@ -265,7 +265,11 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                           const lucrare = getLucrareById(lucrareId);
                           actualizeazaMecanizare(mec.id, {
                             lucrareId,
-                            operatiune: lucrare?.nume || '',
+                            operatiune: lucrare?.nume || '', // Backward compatibility
+                            // Auto-completare detalii tehnice din lucrare
+                            utilajId: lucrare?.utilajId || '',
+                            implementId: lucrare?.implementId || '',
+                            consumMotorina: lucrare?.consumMotorina || mec.consumMotorina || 0,
                           });
                         }}
                         className="input-field text-lg font-semibold px-4 py-3 flex-1 border-2 border-green-300 focus:border-green-500"
