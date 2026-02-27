@@ -309,6 +309,11 @@ export default function Home() {
             <div className="flex flex-wrap items-center gap-4">
               {/* Selector culturi */}
               <div className="flex items-center gap-2 flex-1 min-w-[240px]">
+                {hasChanges && (
+                  <span className="px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-lg whitespace-nowrap">
+                    📝 Modificări nesalvate
+                  </span>
+                )}
                 <select
                   value={culturaSelectata.id}
                   onChange={(e) => handleSelectCultura(e.target.value)}
@@ -361,10 +366,11 @@ export default function Home() {
                 {culturi.length > 0 && (
                   <button
                     onClick={handleStergeCultura}
-                    className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                    title="Șterge cultura"
+                    className="flex items-center gap-2 px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-colors border border-red-200 hover:border-red-300 text-sm font-medium"
+                    title="Șterge cultura selectată"
                   >
                     <Trash2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">Șterge</span>
                   </button>
                 )}
               </div>
