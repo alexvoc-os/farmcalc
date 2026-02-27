@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Header from '@/components/Header';
 import Dashboard from '@/components/Dashboard';
+import FarmOverview from '@/components/FarmOverview';
 import CalculatorForm from '@/components/CalculatorForm';
 import { Cultura } from '@/types';
 import { genereazaId, DEFAULTS_CULTURI } from '@/lib/calcule';
@@ -251,16 +252,24 @@ export default function Home() {
     setSaving(false);
   };
 
-  // Adaugă o cultură nouă
+  // Adaugă o cultură nouă - deschide modal template-uri
   const handleAdaugaCultura = () => {
-    const noua = culturaNoua();
-    setCulturaSelectata(noua);
-    setHasChanges(true);
+    setShowTemplateModal(true);
   };
 
   // Selectează template și creează cultură nouă
   const handleSelectTemplate = (culturaTemplate: Cultura) => {
-    setCulturaSelectata(culturaTemplate);
+    // Creează o nouă cultură cu ID unic
+    const culturaNouaCuIdNou = {
+      ...culturaTemplate,
+      id: genereazaId(), // ID nou pentru a nu avea conflicte
+    };
+
+    // Adaugă în lista de culturi (chiar dacă nu e salvată încă)
+    setCulturi(prev => [culturaNouaCuIdNou, ...prev]);
+
+    // Selectează noua cultură
+    setCulturaSelectata(culturaNouaCuIdNou);
     setHasChanges(true);
   };
 
@@ -390,6 +399,36 @@ export default function Home() {
                 <p className="text-blue-700 leading-relaxed">
                   Conectează-te pentru a salva culturile în cloud și a le accesa de pe orice dispozitiv.
                 </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dashboard General Fermă - afișat când există culturi salvate */}
+        {culturi.length > 0 && (
+          <div className="mb-8">
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">📊 Dashboard General Fermă</h2>
+              <p className="text-sm text-gray-600">Vizualizare completă a tuturor culturilor și statistici generale</p>
+            </div>
+            <FarmOverview
+              culturi={culturi}
+              onSelectCultura={handleSelectCultura}
+            />
+          </div>
+        )}
+
+        {/* Separator */}
+        {culturi.length > 0 && (
+          <div className="mb-8">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t-2 border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-4 py-2 text-sm font-semibold text-gray-700 rounded-full border-2 border-gray-300">
+                  Detalii Cultură Selectată: {culturaSelectata.nume}
+                </span>
               </div>
             </div>
           </div>
