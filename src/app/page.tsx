@@ -305,19 +305,19 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Toolbar pentru culturi */}
         {user && (
-          <div className="mb-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-            <div className="flex flex-wrap items-center gap-4">
+          <div className="mb-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-3">
               {/* Selector culturi */}
-              <div className="flex items-center gap-2 flex-1 min-w-[240px]">
+              <div className="flex items-center gap-2 flex-1 min-w-[200px]">
                 {hasChanges && (
                   <span className="px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-lg whitespace-nowrap">
-                    📝 Modificări nesalvate
+                    📝 Nesalvat
                   </span>
                 )}
                 <select
                   value={culturaSelectata.id}
                   onChange={(e) => handleSelectCultura(e.target.value)}
-                  className="input-field flex-1 font-semibold"
+                  className="input-field flex-1 font-semibold text-sm"
                 >
                   {culturi.length === 0 && (
                     <option value={culturaSelectata.id}>Cultură nouă (nesalvată)</option>
@@ -331,7 +331,7 @@ export default function Home() {
               </div>
 
               {/* Edit suprafață rapidă */}
-              <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-xl border border-green-200">
+              <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-2 rounded-xl border border-green-200">
                 <label className="text-sm font-semibold text-green-700 whitespace-nowrap">
                   Suprafață:
                 </label>
@@ -339,7 +339,7 @@ export default function Home() {
                   type="number"
                   value={culturaSelectata.hectare || ''}
                   onChange={(e) => handleUpdateCultura({ ...culturaSelectata, hectare: parseFloat(e.target.value) || 0 })}
-                  className="input-field w-24 text-center font-bold text-green-700"
+                  className="input-field w-20 text-center font-bold text-green-700 text-sm"
                   placeholder="100"
                   min="0"
                   step="0.1"
@@ -348,27 +348,19 @@ export default function Home() {
               </div>
 
               {/* Butoane acțiuni */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={handleAdaugaCultura}
-                  className="btn-secondary flex items-center gap-2 text-sm"
+                  className="btn-primary flex items-center gap-2 text-sm px-3 py-2"
                 >
                   <Plus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Cultură nouă</span>
-                </button>
-
-                <button
-                  onClick={() => setShowTemplateModal(true)}
-                  className="btn-primary flex items-center gap-2 text-sm"
-                >
-                  <Sprout className="w-4 h-4" />
-                  <span className="hidden sm:inline">Din template</span>
+                  <span className="whitespace-nowrap">Cultură nouă</span>
                 </button>
 
                 <button
                   onClick={handleSave}
                   disabled={saving || !hasChanges}
-                  className={`btn-primary flex items-center gap-2 text-sm ${
+                  className={`btn-primary flex items-center gap-2 text-sm px-3 py-2 ${
                     !hasChanges ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
@@ -377,17 +369,17 @@ export default function Home() {
                   ) : (
                     <Save className="w-4 h-4" />
                   )}
-                  <span className="hidden sm:inline">Salvează</span>
+                  <span className="whitespace-nowrap">Salvează</span>
                 </button>
 
                 {culturi.length > 0 && (
                   <button
                     onClick={handleStergeCultura}
-                    className="flex items-center gap-2 px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-colors border border-red-200 hover:border-red-300 text-sm font-medium"
+                    className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors border border-red-200 hover:border-red-300 text-sm font-medium"
                     title="Șterge cultura selectată"
                   >
                     <Trash2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">Șterge</span>
+                    <span className="whitespace-nowrap">Șterge</span>
                   </button>
                 )}
               </div>
