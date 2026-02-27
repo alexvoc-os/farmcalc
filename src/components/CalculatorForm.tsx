@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Cultura, Input, Mecanizare, Manopera, CostFix, MaterialOperatiune, CULTURI_PREDEFINITE, CATEGORII_INPUT } from '@/types';
+import { useState, useEffect } from 'react';
+import { Cultura, Input, Mecanizare, Manopera, CostFix, MaterialOperatiune, CULTURI_PREDEFINITE, CATEGORII_INPUT, LucrareAgricolaPredefinita, Utilaj, Implement } from '@/types';
 import { genereazaId, DEFAULTS_CULTURI } from '@/lib/calcule';
 import { Plus, Trash2, ChevronDown, ChevronUp, Wheat, Tractor, Users, Layers, TrendingUp } from 'lucide-react';
-import { getLucrari, getUtilaje, getImplementele, getLucrareById } from '@/lib/utilaje-service';
+import { getLucrari, getUtilaje, getImplementele } from '@/lib/utilaje-service';
 
 interface CalculatorFormProps {
   cultura: Cultura;
@@ -23,6 +23,26 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
 
   // State pentru detalii tehnice expandabile per operațiune
   const [detaliiTehniceDeschise, setDetaliiTehniceDeschise] = useState<{[key: string]: boolean}>({});
+  
+  // State pentru utilaje, implementele și lucrări
+  const [lucrari, setLucrari] = useState<LucrareAgricolaPredefinita[]>([]);
+  const [utilaje, setUtilaje] = useState<Utilaj[]>([]);
+  const [implementele, setImplementele] = useState<Implement[]>([]);
+
+  // Încarcă utilajele și lucrările la montare
+  useEffect(() => {
+    const loadData = async () => {
+      setLucrari(await getLucrari());
+      setUtilaje(await getUtilaje());
+      setImplementele(await getImplementele());
+    };
+    loadData();
+  }, []);
+
+  // Helper pentru a găsi o lucrare după ID (din state local)
+  const getLucrareById = (id: string): LucrareAgricolaPredefinita | null => {
+    return lucrari.find(l => l.id === id) || null;
+  };
 
   const toggleSectiune = (sectiune: keyof typeof sectiuniDeschise) => {
     setSectiuniDeschise(prev => ({ ...prev, [sectiune]: !prev[sectiune] }));
@@ -276,7 +296,7 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                         title="Selectează lucrare agricolă"
                       >
                         <option value="">-- Selectează Lucrarea --</option>
-                        {getLucrari().map(l => (
+                        {lucrari.map(l => (
                           <option key={l.id} value={l.id}>{l.nume}</option>
                         ))}
                       </select>
@@ -326,7 +346,7 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                             title="Selectează tractor"
                           >
                             <option value="">-- Tractor --</option>
-                            {getUtilaje().map(u => (
+                            {utilaje.map(u => (
                               <option key={u.id} value={u.id}>{u.nume} ({u.putereCP} CP)</option>
                             ))}
                           </select>
@@ -340,7 +360,7 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
                             title="Selectează implement"
                           >
                             <option value="">-- Implement --</option>
-                            {getImplementele().map(i => (
+                            {implementele.map(i => (
                               <option key={i.id} value={i.id}>{i.nume}</option>
                             ))}
                           </select>

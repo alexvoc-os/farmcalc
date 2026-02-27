@@ -330,6 +330,23 @@ export default function Home() {
                 </select>
               </div>
 
+              {/* Edit suprafață rapidă */}
+              <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-xl border border-green-200">
+                <label className="text-sm font-semibold text-green-700 whitespace-nowrap">
+                  Suprafață:
+                </label>
+                <input
+                  type="number"
+                  value={culturaSelectata.hectare || ''}
+                  onChange={(e) => handleUpdateCultura({ ...culturaSelectata, hectare: parseFloat(e.target.value) || 0 })}
+                  className="input-field w-24 text-center font-bold text-green-700"
+                  placeholder="100"
+                  min="0"
+                  step="0.1"
+                />
+                <span className="text-sm font-medium text-green-700">ha</span>
+              </div>
+
               {/* Butoane acțiuni */}
               <div className="flex items-center gap-3">
                 <button

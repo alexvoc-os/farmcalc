@@ -130,8 +130,16 @@ export const DEFAULTS_CULTURI: Record<string, Partial<Cultura>> = {
     productie: 5000,
     pretVanzare: 0.80,
   },
+  'Orzoiaca': {
+    productie: 4500,
+    pretVanzare: 0.75,
+  },
   'Ovăz': {
     productie: 4000,
     pretVanzare: 0.75,
+  },
+  'Mazăre': {
+    productie: 3500,
+    pretVanzare: 1.20,
   },
 };

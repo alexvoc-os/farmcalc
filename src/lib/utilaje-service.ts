@@ -1,39 +1,173 @@
 /**
  * Serviciu management utilaje, implementele și lucrări agricole
- * Pattern similar cu culturi-service.ts
- * Stocare: localStorage (momentan), migrare Supabase mai târziu
+ * Migrare de la localStorage la Supabase pentru persistență între dispozitive
  */
 
 import { Utilaj, Implement, LucrareAgricolaPredefinita } from '@/types';
-import { TRACTOARE_PREDEFINITE, IMPLEMENTELE_PREDEFINITE, LUCRARI_PREDEFINITE } from './seed-data';
+import { TRACTOARE_PREDEFINITE, IMPLEMENTELE_PREDEFINITE } from './seed-data';
+import { supabase } from './supabase';
 
-// localStorage keys
-const STORAGE_KEY_UTILAJE = 'farmcalc_utilaje_custom';
-const STORAGE_KEY_IMPLEMENTELE = 'farmcalc_implementele_custom';
-const STORAGE_KEY_LUCRARI = 'farmcalc_lucrari_custom';
+// === INTERFEȚE DATABASE ===
+
+interface UtilajDB {
+  id: string;
+  user_id: string;
+  nume: string;
+  marca: string;
+  model: string;
+  putere_cp: number;
+  an_fabricatie: number;
+  consum_mediu_l_ora: number | null;
+  valoare: number | null;
+  is_global: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ImplementDB {
+  id: string;
+  user_id: string;
+  nume: string;
+  tip: string;
+  latime_lucru: number | null;
+  numar_randuri: number | null;
+  greutate: number | null;
+  is_global: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface LucrareDB {
+  id: string;
+  user_id: string;
+  nume: string;
+  utilaj_id: string;
+  implement_id: string;
+  consum_motorina: number;
+  descriere: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// === CONVERTOARE ===
+
+function utilajFromDB(db: UtilajDB): Utilaj {
+  return {
+    id: db.id,
+    nume: db.nume,
+    marca: db.marca,
+    model: db.model,
+    putereCP: db.putere_cp,
+    anFabricatie: db.an_fabricatie,
+    consumMediuLOra: db.consum_mediu_l_ora ?? undefined,
+    valoare: db.valoare ?? undefined,
+    isGlobal: db.is_global,
+  };
+}
+
+function utilajToDB(utilaj: Utilaj, userId: string): Omit<UtilajDB, 'created_at' | 'updated_at'> {
+  return {
+    id: utilaj.id,
+    user_id: userId,
+    nume: utilaj.nume,
+    marca: utilaj.marca,
+    model: utilaj.model,
+    putere_cp: utilaj.putereCP,
+    an_fabricatie: utilaj.anFabricatie,
+    consum_mediu_l_ora: utilaj.consumMediuLOra ?? null,
+    valoare: utilaj.valoare ?? null,
+    is_global: utilaj.isGlobal,
+  };
+}
+
+function implementFromDB(db: ImplementDB): Implement {
+  return {
+    id: db.id,
+    nume: db.nume,
+    tip: db.tip as any,
+    latimeLucru: db.latime_lucru ?? undefined,
+    numarRanduri: db.numar_randuri ?? undefined,
+    greutate: db.greutate ?? undefined,
+    isGlobal: db.is_global,
+  };
+}
+
+function implementToDB(implement: Implement, userId: string): Omit<ImplementDB, 'created_at' | 'updated_at'> {
+  return {
+    id: implement.id,
+    user_id: userId,
+    nume: implement.nume,
+    tip: implement.tip,
+    latime_lucru: implement.latimeLucru ?? null,
+    numar_randuri: implement.numarRanduri ?? null,
+    greutate: implement.greutate ?? null,
+    is_global: implement.isGlobal,
+  };
+}
+
+function lucrareFromDB(db: LucrareDB): LucrareAgricolaPredefinita {
+  return {
+    id: db.id,
+    nume: db.nume,
+    utilajId: db.utilaj_id,
+    implementId: db.implement_id,
+    consumMotorina: db.consum_motorina,
+    descriere: db.descriere ?? undefined,
+  };
+}
+
+function lucrareToDB(lucrare: LucrareAgricolaPredefinita, userId: string): Omit<LucrareDB, 'created_at' | 'updated_at'> {
+  return {
+    id: lucrare.id,
+    user_id: userId,
+    nume: lucrare.nume,
+    utilaj_id: lucrare.utilajId,
+    implement_id: lucrare.implementId,
+    consum_motorina: lucrare.consumMotorina,
+    descriere: lucrare.descriere ?? null,
+  };
+}
 
 // === UTILAJE (TRACTOARE) ===
 
 /**
- * Obține toate utilajele (la prima rulare inițializează cu predefinite)
+ * Obține toate utilajele (predefinite + custom user)
  */
-export function getUtilaje(): Utilaj[] {
+export async function getUtilaje(): Promise<Utilaj[]> {
+  if (!supabase) {
+    // Fallback la predefinite dacă Supabase nu e disponibil
+    return [...TRACTOARE_PREDEFINITE];
+  }
+
   try {
-    // Verifică dacă suntem pe client (browser)
-    if (typeof window === 'undefined') {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      // Utilizator neautentificat - returnează doar predefinite
       return [...TRACTOARE_PREDEFINITE];
     }
 
-    const storedStr = localStorage.getItem(STORAGE_KEY_UTILAJE);
+    const { data, error } = await supabase
+      .from('utilaje')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    // Dacă nu există date, inițializează cu predefinite
-    if (!storedStr) {
-      localStorage.setItem(STORAGE_KEY_UTILAJE, JSON.stringify(TRACTOARE_PREDEFINITE));
+    if (error) {
+      console.error('Eroare la încărcarea utilajelor:', error);
       return [...TRACTOARE_PREDEFINITE];
     }
 
-    const utilaje: Utilaj[] = JSON.parse(storedStr);
-    return utilaje;
+    const utilajeCustom = (data || []).map(utilajFromDB);
+    
+    // Returnează predefinite + custom (fără duplicate)
+    const toateUtilajele = [...TRACTOARE_PREDEFINITE];
+    utilajeCustom.forEach(u => {
+      if (!toateUtilajele.find(existing => existing.id === u.id)) {
+        toateUtilajele.push(u);
+      }
+    });
+
+    return toateUtilajele;
   } catch (error) {
     console.error('Eroare la citirea utilajelor:', error);
     return [...TRACTOARE_PREDEFINITE];
@@ -41,20 +175,29 @@ export function getUtilaje(): Utilaj[] {
 }
 
 /**
- * Salvează un utilaj (toate sunt editabile)
+ * Salvează un utilaj
  */
-export function saveUtilaj(utilaj: Utilaj): boolean {
+export async function saveUtilaj(utilaj: Utilaj): Promise<boolean> {
+  if (!supabase) return false;
+
   try {
-    if (typeof window === 'undefined') return false;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error('Utilizatorul nu este autentificat');
+      return false;
+    }
 
-    const toate = getUtilaje();
-    const exists = toate.find(u => u.id === utilaj.id);
+    const dbData = utilajToDB(utilaj, user.id);
 
-    const updated = exists
-      ? toate.map(u => u.id === utilaj.id ? utilaj : u)
-      : [...toate, utilaj];
+    const { error } = await supabase
+      .from('utilaje')
+      .upsert(dbData, { onConflict: 'id' });
 
-    localStorage.setItem(STORAGE_KEY_UTILAJE, JSON.stringify(updated));
+    if (error) {
+      console.error('Eroare la salvarea utilajului:', error);
+      return false;
+    }
+
     return true;
   } catch (error) {
     console.error('Eroare salvare utilaj:', error);
@@ -63,14 +206,22 @@ export function saveUtilaj(utilaj: Utilaj): boolean {
 }
 
 /**
- * Șterge un utilaj (toate sunt ștergabile)
+ * Șterge un utilaj
  */
-export function deleteUtilaj(id: string): boolean {
-  try {
-    if (typeof window === 'undefined') return false;
+export async function deleteUtilaj(id: string): Promise<boolean> {
+  if (!supabase) return false;
 
-    const toate = getUtilaje().filter(u => u.id !== id);
-    localStorage.setItem(STORAGE_KEY_UTILAJE, JSON.stringify(toate));
+  try {
+    const { error } = await supabase
+      .from('utilaje')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Eroare la ștergerea utilajului:', error);
+      return false;
+    }
+
     return true;
   } catch (error) {
     console.error('Eroare ștergere utilaj:', error);
@@ -81,25 +232,40 @@ export function deleteUtilaj(id: string): boolean {
 // === IMPLEMENTELE ===
 
 /**
- * Obține toate implementele (la prima rulare inițializează cu predefinite)
+ * Obține toate implementele (predefinite + custom user)
  */
-export function getImplementele(): Implement[] {
+export async function getImplementele(): Promise<Implement[]> {
+  if (!supabase) {
+    return [...IMPLEMENTELE_PREDEFINITE];
+  }
+
   try {
-    // Verifică dacă suntem pe client (browser)
-    if (typeof window === 'undefined') {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
       return [...IMPLEMENTELE_PREDEFINITE];
     }
 
-    const storedStr = localStorage.getItem(STORAGE_KEY_IMPLEMENTELE);
+    const { data, error } = await supabase
+      .from('implementele')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    // Dacă nu există date, inițializează cu predefinite
-    if (!storedStr) {
-      localStorage.setItem(STORAGE_KEY_IMPLEMENTELE, JSON.stringify(IMPLEMENTELE_PREDEFINITE));
+    if (error) {
+      console.error('Eroare la încărcarea implementelor:', error);
       return [...IMPLEMENTELE_PREDEFINITE];
     }
 
-    const implementele: Implement[] = JSON.parse(storedStr);
-    return implementele;
+    const implementeleCustom = (data || []).map(implementFromDB);
+    
+    const toateImplementele = [...IMPLEMENTELE_PREDEFINITE];
+    implementeleCustom.forEach(i => {
+      if (!toateImplementele.find(existing => existing.id === i.id)) {
+        toateImplementele.push(i);
+      }
+    });
+
+    return toateImplementele;
   } catch (error) {
     console.error('Eroare la citirea implementelor:', error);
     return [...IMPLEMENTELE_PREDEFINITE];
@@ -107,20 +273,29 @@ export function getImplementele(): Implement[] {
 }
 
 /**
- * Salvează un implement (toate sunt editabile)
+ * Salvează un implement
  */
-export function saveImplement(implement: Implement): boolean {
+export async function saveImplement(implement: Implement): Promise<boolean> {
+  if (!supabase) return false;
+
   try {
-    if (typeof window === 'undefined') return false;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error('Utilizatorul nu este autentificat');
+      return false;
+    }
 
-    const toate = getImplementele();
-    const exists = toate.find(i => i.id === implement.id);
+    const dbData = implementToDB(implement, user.id);
 
-    const updated = exists
-      ? toate.map(i => i.id === implement.id ? implement : i)
-      : [...toate, implement];
+    const { error } = await supabase
+      .from('implementele')
+      .upsert(dbData, { onConflict: 'id' });
 
-    localStorage.setItem(STORAGE_KEY_IMPLEMENTELE, JSON.stringify(updated));
+    if (error) {
+      console.error('Eroare la salvarea implementului:', error);
+      return false;
+    }
+
     return true;
   } catch (error) {
     console.error('Eroare salvare implement:', error);
@@ -129,14 +304,22 @@ export function saveImplement(implement: Implement): boolean {
 }
 
 /**
- * Șterge un implement (toate sunt ștergabile)
+ * Șterge un implement
  */
-export function deleteImplement(id: string): boolean {
-  try {
-    if (typeof window === 'undefined') return false;
+export async function deleteImplement(id: string): Promise<boolean> {
+  if (!supabase) return false;
 
-    const toate = getImplementele().filter(i => i.id !== id);
-    localStorage.setItem(STORAGE_KEY_IMPLEMENTELE, JSON.stringify(toate));
+  try {
+    const { error } = await supabase
+      .from('implementele')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Eroare la ștergerea implementului:', error);
+      return false;
+    }
+
     return true;
   } catch (error) {
     console.error('Eroare ștergere implement:', error);
@@ -147,24 +330,31 @@ export function deleteImplement(id: string): boolean {
 // === LUCRĂRI AGRICOLE ===
 
 /**
- * Obține toate lucrările (toate sunt custom, compuse din utilaj + implement)
+ * Obține toate lucrările utilizatorului
  */
-export function getLucrari(): LucrareAgricolaPredefinita[] {
+export async function getLucrari(): Promise<LucrareAgricolaPredefinita[]> {
+  if (!supabase) {
+    return [];
+  }
+
   try {
-    // Verifică dacă suntem pe client (browser)
-    if (typeof window === 'undefined') {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
       return [];
     }
 
-    const storedStr = localStorage.getItem(STORAGE_KEY_LUCRARI);
+    const { data, error } = await supabase
+      .from('lucrari')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    // Dacă nu există date, returnează array gol (nu mai avem predefinite)
-    if (!storedStr) {
+    if (error) {
+      console.error('Eroare la încărcarea lucrărilor:', error);
       return [];
     }
 
-    const lucrari: LucrareAgricolaPredefinita[] = JSON.parse(storedStr);
-    return lucrari;
+    return (data || []).map(lucrareFromDB);
   } catch (error) {
     console.error('Eroare la citirea lucrărilor:', error);
     return [];
@@ -172,20 +362,29 @@ export function getLucrari(): LucrareAgricolaPredefinita[] {
 }
 
 /**
- * Salvează o lucrare (toate sunt editabile)
+ * Salvează o lucrare
  */
-export function saveLucrare(lucrare: LucrareAgricolaPredefinita): boolean {
+export async function saveLucrare(lucrare: LucrareAgricolaPredefinita): Promise<boolean> {
+  if (!supabase) return false;
+
   try {
-    if (typeof window === 'undefined') return false;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error('Utilizatorul nu este autentificat');
+      return false;
+    }
 
-    const toate = getLucrari();
-    const exists = toate.find(l => l.id === lucrare.id);
+    const dbData = lucrareToDB(lucrare, user.id);
 
-    const updated = exists
-      ? toate.map(l => l.id === lucrare.id ? lucrare : l)
-      : [...toate, lucrare];
+    const { error } = await supabase
+      .from('lucrari')
+      .upsert(dbData, { onConflict: 'id' });
 
-    localStorage.setItem(STORAGE_KEY_LUCRARI, JSON.stringify(updated));
+    if (error) {
+      console.error('Eroare la salvarea lucrării:', error);
+      return false;
+    }
+
     return true;
   } catch (error) {
     console.error('Eroare salvare lucrare:', error);
@@ -194,14 +393,22 @@ export function saveLucrare(lucrare: LucrareAgricolaPredefinita): boolean {
 }
 
 /**
- * Șterge o lucrare (toate sunt ștergabile)
+ * Șterge o lucrare
  */
-export function deleteLucrare(id: string): boolean {
-  try {
-    if (typeof window === 'undefined') return false;
+export async function deleteLucrare(id: string): Promise<boolean> {
+  if (!supabase) return false;
 
-    const toate = getLucrari().filter(l => l.id !== id);
-    localStorage.setItem(STORAGE_KEY_LUCRARI, JSON.stringify(toate));
+  try {
+    const { error } = await supabase
+      .from('lucrari')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Eroare la ștergerea lucrării:', error);
+      return false;
+    }
+
     return true;
   } catch (error) {
     console.error('Eroare ștergere lucrare:', error);
@@ -214,32 +421,23 @@ export function deleteLucrare(id: string): boolean {
 /**
  * Găsește un utilaj după ID
  */
-export function getUtilajById(id: string): Utilaj | null {
-  return getUtilaje().find(u => u.id === id) || null;
+export async function getUtilajById(id: string): Promise<Utilaj | null> {
+  const utilaje = await getUtilaje();
+  return utilaje.find(u => u.id === id) || null;
 }
 
 /**
  * Găsește un implement după ID
  */
-export function getImplementById(id: string): Implement | null {
-  return getImplementele().find(i => i.id === id) || null;
+export async function getImplementById(id: string): Promise<Implement | null> {
+  const implementele = await getImplementele();
+  return implementele.find(i => i.id === id) || null;
 }
 
 /**
  * Găsește o lucrare după ID
  */
-export function getLucrareById(id: string): LucrareAgricolaPredefinita | null {
-  return getLucrari().find(l => l.id === id) || null;
-}
-
-/**
- * Curăță toate datele custom (pentru reset/debug)
- */
-export function clearAllCustomData(): void {
-  if (typeof window === 'undefined') return;
-
-  localStorage.removeItem(STORAGE_KEY_UTILAJE);
-  localStorage.removeItem(STORAGE_KEY_IMPLEMENTELE);
-  localStorage.removeItem(STORAGE_KEY_LUCRARI);
-  console.log('Toate datele custom au fost șterse');
+export async function getLucrareById(id: string): Promise<LucrareAgricolaPredefinita | null> {
+  const lucrari = await getLucrari();
+  return lucrari.find(l => l.id === id) || null;
 }

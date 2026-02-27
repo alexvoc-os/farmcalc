@@ -393,6 +393,268 @@ export const TEMPLATES_CULTURI: TemplateCultura[] = [
     pretVanzareEstimat: 2.3,
     subventiePerHa: 1200,
   },
+  {
+    id: 'template-orz',
+    nume: 'Orz',
+    descriere: 'Fișă tehnologică standard pentru orz de toamnă',
+    icon: 'Wheat',
+    mecanizare: [
+      {
+        operatiune: 'Dezmiriștit',
+        consumMotorina: 10,
+        pretMotorina: 8.0,
+        retributii: 150,
+        materiale: [],
+      },
+      {
+        operatiune: 'Fertilizat de bază',
+        consumMotorina: 1,
+        pretMotorina: 8.0,
+        retributii: 80,
+        materiale: [
+          { id: genereazaId(), denumire: 'NPK 16:16:16', um: 'kg', cantitate: 180, pretUnitar: 2.6 },
+        ],
+      },
+      {
+        operatiune: 'Pregătire pat germinativ',
+        consumMotorina: 10,
+        pretMotorina: 8.0,
+        retributii: 150,
+        materiale: [],
+      },
+      {
+        operatiune: 'Semănat orz',
+        consumMotorina: 5,
+        pretMotorina: 8.0,
+        retributii: 150,
+        materiale: [
+          { id: genereazaId(), denumire: 'Sămânță orz certificată', um: 'kg', cantitate: 200, pretUnitar: 2.0 },
+        ],
+      },
+      {
+        operatiune: 'Erbicidat',
+        consumMotorina: 1,
+        pretMotorina: 8.0,
+        retributii: 80,
+        materiale: [
+          { id: genereazaId(), denumire: 'Erbicid orz', um: 'l', cantitate: 1.2, pretUnitar: 85 },
+        ],
+      },
+      {
+        operatiune: 'Fungicid',
+        consumMotorina: 1,
+        pretMotorina: 8.0,
+        retributii: 80,
+        materiale: [
+          { id: genereazaId(), denumire: 'Fungicid', um: 'l', cantitate: 0.5, pretUnitar: 140 },
+        ],
+      },
+      {
+        operatiune: 'Recoltat orz',
+        consumMotorina: 20,
+        pretMotorina: 8.0,
+        retributii: 130,
+        materiale: [],
+      },
+    ],
+    manopera: [
+      {
+        activitate: 'Operator utilaje',
+        tip: 'permanent',
+        orePerHa: 4,
+        costOrar: 35,
+      },
+      {
+        activitate: 'Supraveghere cultură',
+        tip: 'permanent',
+        orePerHa: 0.5,
+        costOrar: 50,
+      },
+    ],
+    costuriFixe: [
+      { element: 'Arendă', costPerHa: 700 },
+      { element: 'Asigurare culturi', costPerHa: 100 },
+      { element: 'Impozit teren', costPerHa: 50 },
+    ],
+    productieEstimata: 5000,
+    pretVanzareEstimat: 0.80,
+    subventiePerHa: 1200,
+  },
+  {
+    id: 'template-orzoiaca',
+    nume: 'Orzoiaca',
+    descriere: 'Fișă tehnologică standard pentru orz de primăvară',
+    icon: 'Wheat',
+    mecanizare: [
+      {
+        operatiune: 'Dezmiriștit',
+        consumMotorina: 10,
+        pretMotorina: 8.0,
+        retributii: 150,
+        materiale: [],
+      },
+      {
+        operatiune: 'Fertilizat de bază',
+        consumMotorina: 1,
+        pretMotorina: 8.0,
+        retributii: 80,
+        materiale: [
+          { id: genereazaId(), denumire: 'NPK 15:15:15', um: 'kg', cantitate: 160, pretUnitar: 2.5 },
+        ],
+      },
+      {
+        operatiune: 'Pregătire teren',
+        consumMotorina: 10,
+        pretMotorina: 8.0,
+        retributii: 150,
+        materiale: [],
+      },
+      {
+        operatiune: 'Semănat orzoiaca',
+        consumMotorina: 5,
+        pretMotorina: 8.0,
+        retributii: 150,
+        materiale: [
+          { id: genereazaId(), denumire: 'Sămânță orzoiaca certificată', um: 'kg', cantitate: 180, pretUnitar: 1.8 },
+        ],
+      },
+      {
+        operatiune: 'Erbicidat',
+        consumMotorina: 1,
+        pretMotorina: 8.0,
+        retributii: 80,
+        materiale: [
+          { id: genereazaId(), denumire: 'Erbicid', um: 'l', cantitate: 1.0, pretUnitar: 75 },
+        ],
+      },
+      {
+        operatiune: 'Fertilizare în vegetație',
+        consumMotorina: 1,
+        pretMotorina: 8.0,
+        retributii: 80,
+        materiale: [
+          { id: genereazaId(), denumire: 'Uree', um: 'kg', cantitate: 100, pretUnitar: 1.8 },
+        ],
+      },
+      {
+        operatiune: 'Recoltat',
+        consumMotorina: 18,
+        pretMotorina: 8.0,
+        retributii: 130,
+        materiale: [],
+      },
+    ],
+    manopera: [
+      {
+        activitate: 'Operator utilaje',
+        tip: 'permanent',
+        orePerHa: 3.5,
+        costOrar: 35,
+      },
+      {
+        activitate: 'Supraveghere cultură',
+        tip: 'permanent',
+        orePerHa: 0.5,
+        costOrar: 50,
+      },
+    ],
+    costuriFixe: [
+      { element: 'Arendă', costPerHa: 650 },
+      { element: 'Asigurare culturi', costPerHa: 90 },
+      { element: 'Impozit teren', costPerHa: 50 },
+    ],
+    productieEstimata: 4500,
+    pretVanzareEstimat: 0.75,
+    subventiePerHa: 1200,
+  },
+  {
+    id: 'template-mazare',
+    nume: 'Mazăre',
+    descriere: 'Fișă tehnologică standard pentru mazăre boabe',
+    icon: 'Sprout',
+    mecanizare: [
+      {
+        operatiune: 'Dezmiriștit',
+        consumMotorina: 10,
+        pretMotorina: 8.0,
+        retributii: 150,
+        materiale: [],
+      },
+      {
+        operatiune: 'Fertilizat de bază',
+        consumMotorina: 1,
+        pretMotorina: 8.0,
+        retributii: 80,
+        materiale: [
+          { id: genereazaId(), denumire: 'NPK 10:20:10', um: 'kg', cantitate: 150, pretUnitar: 2.4 },
+        ],
+      },
+      {
+        operatiune: 'Pregătire teren',
+        consumMotorina: 10,
+        pretMotorina: 8.0,
+        retributii: 150,
+        materiale: [],
+      },
+      {
+        operatiune: 'Semănat mazăre',
+        consumMotorina: 5,
+        pretMotorina: 8.0,
+        retributii: 150,
+        materiale: [
+          { id: genereazaId(), denumire: 'Sămânță mazăre certificată', um: 'kg', cantitate: 160, pretUnitar: 3.5 },
+          { id: genereazaId(), denumire: 'Inoculant pentru leguminoase', um: 'kg', cantitate: 0.5, pretUnitar: 120 },
+        ],
+      },
+      {
+        operatiune: 'Erbicidat',
+        consumMotorina: 1,
+        pretMotorina: 8.0,
+        retributii: 80,
+        materiale: [
+          { id: genereazaId(), denumire: 'Erbicid selective mazăre', um: 'l', cantitate: 1.5, pretUnitar: 90 },
+        ],
+      },
+      {
+        operatiune: 'Insecticid',
+        consumMotorina: 1,
+        pretMotorina: 8.0,
+        retributii: 80,
+        materiale: [
+          { id: genereazaId(), denumire: 'Insecticid (afide)', um: 'l', cantitate: 0.5, pretUnitar: 110 },
+        ],
+      },
+      {
+        operatiune: 'Recoltat mazăre',
+        consumMotorina: 20,
+        pretMotorina: 8.0,
+        retributii: 140,
+        materiale: [],
+      },
+    ],
+    manopera: [
+      {
+        activitate: 'Operator utilaje',
+        tip: 'permanent',
+        orePerHa: 4,
+        costOrar: 35,
+      },
+      {
+        activitate: 'Supraveghere cultură',
+        tip: 'permanent',
+        orePerHa: 0.7,
+        costOrar: 50,
+      },
+    ],
+    costuriFixe: [
+      { element: 'Arendă', costPerHa: 720 },
+      { element: 'Asigurare culturi', costPerHa: 110 },
+      { element: 'Impozit teren', costPerHa: 50 },
+    ],
+    productieEstimata: 3500,
+    pretVanzareEstimat: 1.20,
+    subventiePerHa: 1200,
+  },
 ];
 
 // Funcție helper pentru a crea Cultura din template

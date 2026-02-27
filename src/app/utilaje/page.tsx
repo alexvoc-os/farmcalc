@@ -19,10 +19,10 @@ export default function UtilajePage() {
     handleRefresh();
   }, []);
 
-  const handleRefresh = () => {
-    setUtilaje(getUtilaje());
-    setImplementele(getImplementele());
-    setLucrari(getLucrari());
+  const handleRefresh = async () => {
+    setUtilaje(await getUtilaje());
+    setImplementele(await getImplementele());
+    setLucrari(await getLucrari());
   };
 
   return (

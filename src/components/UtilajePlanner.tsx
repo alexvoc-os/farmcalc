@@ -33,17 +33,17 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
     setEditingId(nou.id);
   };
 
-  const handleSaveUtilaj = () => {
-    if (saveUtilaj(formData)) {
+  const handleSaveUtilaj = async () => {
+    if (await saveUtilaj(formData)) {
       setEditingId(null);
       setFormData({});
       onRefresh();
     }
   };
 
-  const handleDeleteUtilaj = (id: string) => {
+  const handleDeleteUtilaj = async (id: string) => {
     if (window.confirm('Sigur vrei să ștergi acest tractor?')) {
-      if (deleteUtilaj(id)) {
+      if (await deleteUtilaj(id)) {
         onRefresh();
       }
     }
@@ -61,17 +61,17 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
     setEditingId(nou.id);
   };
 
-  const handleSaveImplement = () => {
-    if (saveImplement(formData)) {
+  const handleSaveImplement = async () => {
+    if (await saveImplement(formData)) {
       setEditingId(null);
       setFormData({});
       onRefresh();
     }
   };
 
-  const handleDeleteImplement = (id: string) => {
+  const handleDeleteImplement = async (id: string) => {
     if (window.confirm('Sigur vrei să ștergi acest implement?')) {
-      if (deleteImplement(id)) {
+      if (await deleteImplement(id)) {
         onRefresh();
       }
     }
@@ -90,7 +90,7 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
     setEditingId(nou.id);
   };
 
-  const handleSaveLucrare = () => {
+  const handleSaveLucrare = async () => {
     // Generează numele automat din utilaj + implement
     const utilaj = utilaje.find(u => u.id === formData.utilajId);
     const implement = implementele.find(i => i.id === formData.implementId);
@@ -103,16 +103,16 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
     const numeGenerat = `${implement.nume} + ${utilaj.nume}`;
     const dataFinala = { ...formData, nume: numeGenerat };
 
-    if (saveLucrare(dataFinala)) {
+    if (await saveLucrare(dataFinala)) {
       setEditingId(null);
       setFormData({});
       onRefresh();
     }
   };
 
-  const handleDeleteLucrare = (id: string) => {
+  const handleDeleteLucrare = async (id: string) => {
     if (window.confirm('Sigur vrei să ștergi această lucrare?')) {
-      if (deleteLucrare(id)) {
+      if (await deleteLucrare(id)) {
         onRefresh();
       }
     }

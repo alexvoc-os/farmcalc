@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Wheat, Sun, Leaf } from 'lucide-react';
+import { X, Wheat, Sun, Leaf, Sprout } from 'lucide-react';
 import { TEMPLATES_CULTURI, createCulturaFromTemplate } from '@/lib/templates-culturi';
 import { Cultura } from '@/types';
 
@@ -33,6 +33,8 @@ export default function TemplateModal({ isOpen, onClose, onSelectTemplate }: Tem
         return Sun;
       case 'Leaf':
         return Leaf;
+      case 'Sprout':
+        return Sprout;
       default:
         return Wheat;
     }
