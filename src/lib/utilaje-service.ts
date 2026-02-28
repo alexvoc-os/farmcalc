@@ -131,20 +131,19 @@ function lucrareToDB(lucrare: LucrareAgricolaPredefinita, userId: string): Omit<
 // === UTILAJE (TRACTOARE) ===
 
 /**
- * Obține toate utilajele (predefinite + custom user)
+ * Obține toate utilajele utilizatorului din baza de date
+ * Fără predefinite - fiecare utilizator își introduce propriile utilaje
  */
 export async function getUtilaje(): Promise<Utilaj[]> {
   if (!supabase) {
-    // Fallback la predefinite dacă Supabase nu e disponibil
-    return [...TRACTOARE_PREDEFINITE];
+    return [];
   }
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      // Utilizator neautentificat - returnează doar predefinite
-      return [...TRACTOARE_PREDEFINITE];
+      return [];
     }
 
     const { data, error } = await supabase
@@ -154,23 +153,13 @@ export async function getUtilaje(): Promise<Utilaj[]> {
 
     if (error) {
       console.error('Eroare la încărcarea utilajelor:', error);
-      return [...TRACTOARE_PREDEFINITE];
+      return [];
     }
 
-    const utilajeCustom = (data || []).map(utilajFromDB);
-
-    // Returnează predefinite + custom (fără duplicate)
-    const toateUtilajele = [...TRACTOARE_PREDEFINITE];
-    utilajeCustom.forEach(u => {
-      if (!toateUtilajele.find(existing => existing.id === u.id)) {
-        toateUtilajele.push(u);
-      }
-    });
-
-    return toateUtilajele;
+    return (data || []).map(utilajFromDB);
   } catch (error) {
     console.error('Eroare la citirea utilajelor:', error);
-    return [...TRACTOARE_PREDEFINITE];
+    return [];
   }
 }
 
@@ -232,18 +221,19 @@ export async function deleteUtilaj(id: string): Promise<boolean> {
 // === IMPLEMENTELE ===
 
 /**
- * Obține toate implementele (predefinite + custom user)
+ * Obține toate implementele utilizatorului din baza de date
+ * Fără predefinite - fiecare utilizator își introduce propriile implementele
  */
 export async function getImplementele(): Promise<Implement[]> {
   if (!supabase) {
-    return [...IMPLEMENTELE_PREDEFINITE];
+    return [];
   }
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      return [...IMPLEMENTELE_PREDEFINITE];
+      return [];
     }
 
     const { data, error } = await supabase
@@ -253,22 +243,13 @@ export async function getImplementele(): Promise<Implement[]> {
 
     if (error) {
       console.error('Eroare la încărcarea implementelor:', error);
-      return [...IMPLEMENTELE_PREDEFINITE];
+      return [];
     }
 
-    const implementeleCustom = (data || []).map(implementFromDB);
-
-    const toateImplementele = [...IMPLEMENTELE_PREDEFINITE];
-    implementeleCustom.forEach(i => {
-      if (!toateImplementele.find(existing => existing.id === i.id)) {
-        toateImplementele.push(i);
-      }
-    });
-
-    return toateImplementele;
+    return (data || []).map(implementFromDB);
   } catch (error) {
     console.error('Eroare la citirea implementelor:', error);
-    return [...IMPLEMENTELE_PREDEFINITE];
+    return [];
   }
 }
 
