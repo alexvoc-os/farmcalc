@@ -41,10 +41,10 @@ CREATE TABLE lucrari_custom (
   id TEXT PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   nume TEXT NOT NULL,
-  tip TEXT NOT NULL,
+  utilaj_id TEXT NOT NULL, -- ID tractor
+  implement_id TEXT NOT NULL, -- ID implement
+  consum_motorina NUMERIC(10,2) NOT NULL, -- litri/ha
   descriere TEXT,
-  is_global BOOLEAN DEFAULT false,
-  ordine INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
