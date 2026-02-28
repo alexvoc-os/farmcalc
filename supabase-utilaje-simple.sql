@@ -16,6 +16,7 @@ CREATE TABLE utilaje (
   putere_cp INTEGER NOT NULL,
   an_fabricatie INTEGER,
   consum_mediu_l_ora NUMERIC(10,2),
+  valoare NUMERIC(10,2), -- Valoare de inventar (opțional)
   is_global BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
