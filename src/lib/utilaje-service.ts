@@ -165,29 +165,41 @@ export async function getUtilaje(): Promise<Utilaj[]> {
  * Salvează un utilaj
  */
 export async function saveUtilaj(utilaj: Utilaj): Promise<boolean> {
-  if (!supabase) return false;
+  console.log('🟢 saveUtilaj called with:', utilaj);
+
+  if (!supabase) {
+    console.error('❌ Supabase client not initialized');
+    return false;
+  }
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
+    console.log('🟢 User:', user?.id);
+
     if (!user) {
-      console.error('Utilizatorul nu este autentificat');
+      console.error('❌ Utilizatorul nu este autentificat');
       return false;
     }
 
     const dbData = utilajToDB(utilaj, user.id);
+    console.log('🟢 DB Data:', dbData);
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('utilaje')
-      .upsert(dbData, { onConflict: 'id' });
+      .upsert(dbData, { onConflict: 'id' })
+      .select();
+
+    console.log('🟢 Supabase response:', { data, error });
 
     if (error) {
-      console.error('Eroare la salvarea utilajului:', error);
+      console.error('❌ Eroare la salvarea utilajului:', error);
       return false;
     }
 
+    console.log('✅ Utilaj salvat cu succes!');
     return true;
   } catch (error) {
-    console.error('Eroare salvare utilaj:', error);
+    console.error('❌ Eroare salvare utilaj:', error);
     return false;
   }
 }

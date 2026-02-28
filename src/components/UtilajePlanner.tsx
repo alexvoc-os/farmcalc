@@ -34,10 +34,16 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
   };
 
   const handleSaveUtilaj = async () => {
-    if (await saveUtilaj(formData)) {
+    console.log('🔵 Saving utilaj...', formData);
+    const result = await saveUtilaj(formData);
+    console.log('🔵 Save result:', result);
+    if (result) {
       setEditingId(null);
       setFormData({});
       onRefresh();
+    } else {
+      console.error('❌ Salvare eșuată');
+      alert('Eroare la salvare! Verifică consola pentru detalii.');
     }
   };
 
