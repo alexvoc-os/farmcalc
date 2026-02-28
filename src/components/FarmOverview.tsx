@@ -9,9 +9,10 @@ interface FarmOverviewProps {
   culturi: Cultura[];
   onSelectCultura?: (id: string) => void;
   toolbarSlot?: React.ReactNode;
+  anAgricolCurent?: string;
 }
 
-export default function FarmOverview({ culturi, onSelectCultura, toolbarSlot }: FarmOverviewProps) {
+export default function FarmOverview({ culturi, onSelectCultura, toolbarSlot, anAgricolCurent }: FarmOverviewProps) {
   // Calculează statisticile generale
   const stats = useMemo(() => {
     if (culturi.length === 0) {
@@ -81,7 +82,14 @@ export default function FarmOverview({ culturi, onSelectCultura, toolbarSlot }: 
           <div className="flex justify-between items-start">
             <div>
               <p className="text-green-100 text-sm font-semibold mb-1">📊 Informații Generale</p>
-              <h2 className="text-3xl font-bold text-white mb-2">Ferma Mea</h2>
+              <div className="flex items-baseline gap-3 mb-2">
+                <h2 className="text-3xl font-bold text-white">Ferma Mea</h2>
+                {anAgricolCurent && (
+                  <span className="px-3 py-1 bg-white bg-opacity-20 text-white text-sm font-semibold rounded-lg border border-white border-opacity-30">
+                    📅 {anAgricolCurent}
+                  </span>
+                )}
+              </div>
               <p className="text-green-100 font-medium">
                 <span className="text-2xl font-bold text-white">{formateazaNumar(stats.totalHectare)}</span> hectare totale
               </p>

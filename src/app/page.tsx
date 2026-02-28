@@ -468,6 +468,7 @@ export default function Home() {
             <FarmOverview
               culturi={culturi}
               onSelectCultura={handleSelectCultura}
+              anAgricolCurent={anAgricolCurent}
               toolbarSlot={
                 user ? (
                   <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
