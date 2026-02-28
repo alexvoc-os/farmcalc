@@ -11,7 +11,7 @@ import { supabase } from './supabase';
 interface UtilajDB {
   id: string;
   user_id: string;
-  nume: string | null; // Deprecated - se generează automat din marca + model
+  // Câmpul 'nume' a fost eliminat - folosim doar marca + model
   marca: string;
   model: string;
   putere_cp: number;
@@ -64,11 +64,10 @@ function utilajFromDB(db: UtilajDB): Utilaj {
   };
 }
 
-function utilajToDB(utilaj: Utilaj, userId: string): Omit<UtilajDB, 'created_at' | 'updated_at' | 'nume'> {
+function utilajToDB(utilaj: Utilaj, userId: string): Omit<UtilajDB, 'created_at' | 'updated_at'> {
   return {
     id: utilaj.id,
     user_id: userId,
-    // Câmpul 'nume' este GENERATED în Supabase - nu trebuie setat manual
     marca: utilaj.marca,
     model: utilaj.model,
     putere_cp: utilaj.putereCP,
