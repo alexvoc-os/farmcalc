@@ -24,12 +24,12 @@ export default function CalculatorForm({ cultura, onUpdate }: CalculatorFormProp
   // State pentru detalii tehnice expandabile per operațiune
   const [detaliiTehniceDeschise, setDetaliiTehniceDeschise] = useState<{[key: string]: boolean}>({});
   
-  // State pentru utilaje, implementele și lucrări
+  // State pentru utilaje, implementele și lucrări (momentan returnează doar predefinite)
   const [lucrari, setLucrari] = useState<LucrareAgricolaPredefinita[]>([]);
   const [utilaje, setUtilaje] = useState<Utilaj[]>([]);
   const [implementele, setImplementele] = useState<Implement[]>([]);
 
-  // Încarcă utilajele și lucrările la montare
+  // Încarcă utilajele și lucrările la montare (momentan fără erori - returnează doar predefinite)
   useEffect(() => {
     const loadData = async () => {
       setLucrari(await getLucrari());
