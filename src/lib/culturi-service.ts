@@ -70,12 +70,11 @@ function toDB(cultura: Cultura, userId: string, anAgricol: string): Omit<Cultura
 export async function getCulturi(anAgricol: string): Promise<Cultura[]> {
   if (!supabase) return [];
 
-  // TEMPORARY FIX: Includere culturi fără an_agricol (NULL) pentru compatibilitate cu date vechi
-  // Query-ul va returna culturi unde an_agricol = anAgricol SAU an_agricol IS NULL
+  // TEMPORARY: Returnează TOATE culturile utilizatorului (fără filtrare după an_agricol)
+  // Filtrarea se va face în cod după ce coloana an_agricol va fi adăugată
   const { data, error } = await supabase
     .from('culturi')
     .select('*')
-    .or(`an_agricol.eq.${anAgricol},an_agricol.is.null`)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -83,7 +82,7 @@ export async function getCulturi(anAgricol: string): Promise<Cultura[]> {
     return [];
   }
 
-  // Setează an_agricol la valorile returnate dacă e NULL
+  // Filtrare și setare an_agricol în JavaScript
   return (data || []).map(row => {
     const cultura = fromDB(row);
     // Dacă cultura nu are an_agricol, setează-l la anul curent
@@ -91,7 +90,7 @@ export async function getCulturi(anAgricol: string): Promise<Cultura[]> {
       cultura.anAgricol = anAgricol;
     }
     return cultura;
-  });
+  }).filter(c => c.anAgricol === anAgricol); // Filtrare după an în JavaScript
 }
 
 // Obține o cultură după ID
