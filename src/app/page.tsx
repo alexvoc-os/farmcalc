@@ -7,7 +7,7 @@ import FarmOverview from '@/components/FarmOverview';
 import CalculatorForm from '@/components/CalculatorForm';
 import { Cultura } from '@/types';
 import { genereazaId, DEFAULTS_CULTURI } from '@/lib/calcule';
-import { getCulturi, saveCultura, deleteCultura } from '@/lib/culturi-service';
+import { getCulturi, saveCultura, deleteCultura, migreazaCulturiLaAnAgricol } from '@/lib/culturi-service';
 import { supabase } from '@/lib/supabase';
 import { Plus, Trash2, Save, Cloud, CloudOff, Loader2, Sprout, Calendar } from 'lucide-react';
 import TemplateModal from '@/components/TemplateModal';
@@ -145,6 +145,40 @@ export default function Home() {
   // State pentru detectarea anului gol
   const [anulAnteriorAreCulturi, setAnulAnteriorAreCulturi] = useState(false);
   const [verificatAnGol, setVerificatAnGol] = useState(false);
+
+  // Migrare automată - rulează o singură dată la prima conectare
+  useEffect(() => {
+    const runMigrare = async () => {
+      if (!user || !supabase) return;
+
+      // Verifică dacă migrarea a fost deja făcută
+      const migrareKey = `farmcalc_migrare_an_agricol_${user.id}`;
+      const migrareFacuta = localStorage.getItem(migrareKey);
+
+      if (migrareFacuta === 'done') {
+        return; // Migrarea a fost deja făcută
+      }
+
+      console.log('🔄 Rulare migrare automată pentru an_agricol...');
+      const result = await migreazaCulturiLaAnAgricol();
+
+      if (result.success) {
+        console.log(`✅ Migrare completă: ${result.count} culturi actualizate`);
+        localStorage.setItem(migrareKey, 'done');
+
+        // Reîncarcă culturile după migrare
+        if (result.count > 0) {
+          const culturiActualizate = await getCulturi(anAgricolCurent);
+          setCulturi(culturiActualizate);
+          if (culturiActualizate.length > 0) {
+            setCulturaSelectata(culturiActualizate[0]);
+          }
+        }
+      }
+    };
+
+    runMigrare();
+  }, [user, anAgricolCurent]);
 
   // Verifică autentificarea și încarcă culturile
   useEffect(() => {

@@ -163,6 +163,56 @@ export async function isAuthenticated(): Promise<boolean> {
   return !!user;
 }
 
+// Migrare automată: Setează an_agricol pentru toate culturile care nu au acest câmp
+export async function migreazaCulturiLaAnAgricol(): Promise<{ success: boolean; count: number }> {
+  if (!supabase) return { success: false, count: 0 };
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.log('Utilizator neautentificat - skip migrare');
+      return { success: false, count: 0 };
+    }
+
+    // Verifică dacă mai sunt culturi fără an_agricol
+    const { data: culturiFaraN, error: checkError } = await supabase
+      .from('culturi')
+      .select('id')
+      .is('an_agricol', null);
+
+    if (checkError) {
+      console.error('Eroare verificare culturi:', checkError);
+      return { success: false, count: 0 };
+    }
+
+    const numarCulturiFaraAn = culturiFaraN?.length || 0;
+
+    if (numarCulturiFaraAn === 0) {
+      console.log('Toate culturile au deja an_agricol setat');
+      return { success: true, count: 0 };
+    }
+
+    console.log(`Setare an_agricol pentru ${numarCulturiFaraAn} culturi...`);
+
+    // Update toate culturile fără an_agricol la 2024-2025
+    const { error: updateError } = await supabase
+      .from('culturi')
+      .update({ an_agricol: '2024-2025' })
+      .is('an_agricol', null);
+
+    if (updateError) {
+      console.error('Eroare la update culturi:', updateError);
+      return { success: false, count: 0 };
+    }
+
+    console.log(`✅ ${numarCulturiFaraAn} culturi actualizate la 2024-2025`);
+    return { success: true, count: numarCulturiFaraAn };
+  } catch (error) {
+    console.error('Eroare în migrare:', error);
+    return { success: false, count: 0 };
+  }
+}
+
 // Obține anii agricoli disponibili pentru utilizatorul curent
 export async function getAniAgricoliDisponibili(): Promise<string[]> {
   if (!supabase) return [];
