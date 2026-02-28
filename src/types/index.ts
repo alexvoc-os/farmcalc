@@ -116,7 +116,7 @@ export interface LucrareAgricolaPredefinita {
 // Tractor din fermă
 export interface Utilaj {
   id: string;
-  nume: string; // "John Deere 6230"
+  // Câmpul "nume" a fost eliminat - se folosește marca + model
   marca: string; // "John Deere"
   model: string; // "6230"
   putereCP: number; // 230

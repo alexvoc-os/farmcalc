@@ -12,7 +12,7 @@ import { supabase } from './supabase';
 interface UtilajDB {
   id: string;
   user_id: string;
-  nume: string;
+  nume: string | null; // Deprecated - se generează automat din marca + model
   marca: string;
   model: string;
   putere_cp: number;
@@ -54,7 +54,7 @@ interface LucrareDB {
 function utilajFromDB(db: UtilajDB): Utilaj {
   return {
     id: db.id,
-    nume: db.nume,
+    // Câmpul nume nu mai este folosit - se afișează marca + model
     marca: db.marca,
     model: db.model,
     putereCP: db.putere_cp,
@@ -69,7 +69,7 @@ function utilajToDB(utilaj: Utilaj, userId: string): Omit<UtilajDB, 'created_at'
   return {
     id: utilaj.id,
     user_id: userId,
-    nume: utilaj.nume,
+    nume: `${utilaj.marca} ${utilaj.model}`, // Generat automat din marca + model
     marca: utilaj.marca,
     model: utilaj.model,
     putere_cp: utilaj.putereCP,

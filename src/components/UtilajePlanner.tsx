@@ -22,7 +22,7 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
   const handleAddUtilaj = () => {
     const nou: Utilaj = {
       id: genereazaId(),
-      nume: '',
+      // Câmpul nume eliminat - se generează automat din marca + model
       marca: '',
       model: '',
       putereCP: 0,
@@ -100,7 +100,7 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
       return;
     }
 
-    const numeGenerat = `${implement.nume} + ${utilaj.nume}`;
+    const numeGenerat = `${implement.nume} + ${utilaj.marca} ${utilaj.model}`;
     const dataFinala = { ...formData, nume: numeGenerat };
 
     if (await saveLucrare(dataFinala)) {
@@ -134,7 +134,6 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Nume</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Marcă</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Model</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Putere (CP)</th>
@@ -145,8 +144,7 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
               <tbody>
                 {utilaje.map(utilaj => (
                   <tr key={utilaj.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium">{utilaj.nume}</td>
-                    <td className="px-4 py-3">{utilaj.marca}</td>
+                    <td className="px-4 py-3 font-medium">{utilaj.marca}</td>
                     <td className="px-4 py-3">{utilaj.model}</td>
                     <td className="px-4 py-3">{utilaj.putereCP} CP</td>
                     <td className="px-4 py-3">{utilaj.anFabricatie}</td>
@@ -262,7 +260,7 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
                   return (
                     <tr key={lucr.id} className="border-t hover:bg-gray-50">
                       <td className="px-4 py-3 font-medium">{lucr.nume}</td>
-                      <td className="px-4 py-3 text-sm">{utilaj?.nume || '-'}</td>
+                      <td className="px-4 py-3 text-sm">{utilaj ? `${utilaj.marca} ${utilaj.model}` : '-'}</td>
                       <td className="px-4 py-3 text-sm">{implement?.nume || '-'}</td>
                       <td className="px-4 py-3 font-semibold text-amber-700">{lucr.consumMotorina} L/ha</td>
                       <td className="px-4 py-3">
@@ -311,16 +309,9 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
                 <>
                   <input
                     type="text"
-                    value={formData.nume || ''}
-                    onChange={(e) => setFormData({ ...formData, nume: e.target.value })}
-                    placeholder="Nume (ex: John Deere 6230)"
-                    className="input-field"
-                  />
-                  <input
-                    type="text"
                     value={formData.marca || ''}
                     onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
-                    placeholder="Marcă"
+                    placeholder="Marcă (ex: John Deere)"
                     className="input-field"
                   />
                   <input
@@ -406,7 +397,7 @@ export default function UtilajePlanner({ activeTab, utilaje, implementele, lucra
                     >
                       <option value="">-- Selectează tractor --</option>
                       {utilaje.map(utilaj => (
-                        <option key={utilaj.id} value={utilaj.id}>{utilaj.nume} ({utilaj.putereCP} CP)</option>
+                        <option key={utilaj.id} value={utilaj.id}>{utilaj.marca} {utilaj.model} ({utilaj.putereCP} CP)</option>
                       ))}
                     </select>
                   </div>

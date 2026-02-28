@@ -8,7 +8,7 @@
 CREATE TABLE IF NOT EXISTS utilaje (
   id TEXT PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  nume TEXT NOT NULL,
+  nume TEXT GENERATED ALWAYS AS (marca || ' ' || model) STORED, -- Generat automat din marca + model
   marca TEXT NOT NULL,
   model TEXT NOT NULL,
   putere_cp INTEGER NOT NULL,
