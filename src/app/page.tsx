@@ -9,8 +9,10 @@ import { Cultura } from '@/types';
 import { genereazaId, DEFAULTS_CULTURI } from '@/lib/calcule';
 import { getCulturi, saveCultura, deleteCultura } from '@/lib/culturi-service';
 import { supabase } from '@/lib/supabase';
-import { Plus, Trash2, Save, Cloud, CloudOff, Loader2, Sprout } from 'lucide-react';
+import { Plus, Trash2, Save, Cloud, CloudOff, Loader2, Sprout, Calendar } from 'lucide-react';
 import TemplateModal from '@/components/TemplateModal';
+import CreateAnAgricolModal from '@/components/CreateAnAgricolModal';
+import { useAnAgricol } from '@/contexts/AnAgricolContext';
 
 // Cultură demo cu date pre-populate
 const culturaNoua = (): Cultura => ({
@@ -135,6 +137,10 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showCreateAnModal, setShowCreateAnModal] = useState(false);
+
+  // Hook pentru an agricol
+  const { anAgricolCurent } = useAnAgricol();
 
   // Verifică autentificarea și încarcă culturile
   useEffect(() => {
@@ -151,14 +157,14 @@ export default function Home() {
 
       if (currentUser) {
         try {
-          console.log('Loading data for user:', currentUser.email);
-          const culturiSalvate = await getCulturi();
+          console.log('Loading data for user:', currentUser.email, 'An:', anAgricolCurent);
+          const culturiSalvate = await getCulturi(anAgricolCurent);
           if (!mounted) return;
 
           if (culturiSalvate.length > 0) {
             setCulturi(culturiSalvate);
             setCulturaSelectata(culturiSalvate[0]);
-            console.log('Loaded', culturiSalvate.length, 'cultures');
+            console.log('Loaded', culturiSalvate.length, 'cultures for', anAgricolCurent);
           } else {
             setCulturi([]);
             setCulturaSelectata(culturaNoua());
@@ -218,7 +224,7 @@ export default function Home() {
       clearTimeout(timeout);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [anAgricolCurent]); // Reîncarcă culturile când se schimbă anul agricol
 
   // Actualizează cultura curentă
   const handleUpdateCultura = useCallback((culturaActualizata: Cultura) => {
@@ -236,7 +242,7 @@ export default function Home() {
     if (!user) return;
 
     setSaving(true);
-    const saved = await saveCultura(culturaSelectata);
+    const saved = await saveCultura(culturaSelectata, anAgricolCurent);
 
     if (saved) {
       // Adaugă în listă dacă e nouă
@@ -298,110 +304,23 @@ export default function Home() {
     }
   };
 
+  // Handler pentru success creare an nou
+  const handleCreateAnSuccess = async () => {
+    // Reîncarcă culturile (useEffect se va triggera automat când se schimbă anul în context)
+    if (user) {
+      const culturiSalvate = await getCulturi(anAgricolCurent);
+      setCulturi(culturiSalvate);
+      if (culturiSalvate.length > 0) {
+        setCulturaSelectata(culturiSalvate[0]);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Toolbar pentru culturi */}
-        {user && (
-          <div className="mb-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-3">
-              {/* Selector culturi */}
-              <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                {hasChanges && (
-                  <span className="px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-lg whitespace-nowrap">
-                    📝 Nesalvat
-                  </span>
-                )}
-                <select
-                  value={culturaSelectata.id}
-                  onChange={(e) => handleSelectCultura(e.target.value)}
-                  className="input-field flex-1 font-semibold text-sm"
-                >
-                  {culturi.length === 0 && (
-                    <option value={culturaSelectata.id}>Cultură nouă (nesalvată)</option>
-                  )}
-                  {culturi.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.nume} - {c.hectare} ha
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Edit suprafață rapidă */}
-              <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-2 rounded-xl border border-green-200">
-                <label className="text-sm font-semibold text-green-700 whitespace-nowrap">
-                  Suprafață:
-                </label>
-                <input
-                  type="number"
-                  value={culturaSelectata.hectare || ''}
-                  onChange={(e) => handleUpdateCultura({ ...culturaSelectata, hectare: parseFloat(e.target.value) || 0 })}
-                  className="input-field w-20 text-center font-bold text-green-700 text-sm"
-                  placeholder="100"
-                  min="0"
-                  step="0.1"
-                />
-                <span className="text-sm font-medium text-green-700">ha</span>
-              </div>
-
-              {/* Butoane acțiuni */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleAdaugaCultura}
-                  className="btn-primary flex items-center gap-2 text-sm px-3 py-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span className="whitespace-nowrap">Cultură nouă</span>
-                </button>
-
-                <button
-                  onClick={handleSave}
-                  disabled={saving || !hasChanges}
-                  className={`btn-primary flex items-center gap-2 text-sm px-3 py-2 ${
-                    !hasChanges ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {saving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  <span className="whitespace-nowrap">Salvează</span>
-                </button>
-
-                {culturi.length > 0 && (
-                  <button
-                    onClick={handleStergeCultura}
-                    className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors border border-red-200 hover:border-red-300 text-sm font-medium"
-                    title="Șterge cultura selectată"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span className="whitespace-nowrap">Șterge</span>
-                  </button>
-                )}
-              </div>
-
-              {/* Status sincronizare */}
-              <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl">
-                {hasChanges ? (
-                  <>
-                    <CloudOff className="w-4 h-4 text-amber-500" />
-                    <span className="hidden sm:inline text-sm font-semibold text-amber-700">Modificări nesalvate</span>
-                  </>
-                ) : culturi.length > 0 ? (
-                  <>
-                    <Cloud className="w-4 h-4 text-green-500" />
-                    <span className="hidden sm:inline text-sm font-semibold text-green-700">Salvat în cloud</span>
-                  </>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Mesaj pentru utilizatori neautentificați */}
         {!loading && !user && (
           <div className="mb-8 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-5 text-sm shadow-sm">
@@ -426,9 +345,120 @@ export default function Home() {
               <h2 className="text-2xl font-bold text-gray-900 mb-1">📊 Dashboard General Fermă</h2>
               <p className="text-sm text-gray-600">Vizualizare completă a tuturor culturilor și statistici generale</p>
             </div>
+
             <FarmOverview
               culturi={culturi}
               onSelectCultura={handleSelectCultura}
+              toolbarSlot={
+                user ? (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
+                    <div className="flex items-center gap-3">
+                      {/* Selector culturi */}
+                      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                        {hasChanges && (
+                          <span className="px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-lg whitespace-nowrap">
+                            📝 Nesalvat
+                          </span>
+                        )}
+                        <select
+                          value={culturaSelectata.id}
+                          onChange={(e) => handleSelectCultura(e.target.value)}
+                          className="input-field flex-1 font-semibold text-sm"
+                        >
+                          {culturi.length === 0 && (
+                            <option value={culturaSelectata.id}>Cultură nouă (nesalvată)</option>
+                          )}
+                          {culturi.map(c => (
+                            <option key={c.id} value={c.id}>
+                              {c.nume} - {c.hectare} ha
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Edit suprafață rapidă */}
+                      <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-2 rounded-xl border border-green-200">
+                        <label className="text-sm font-semibold text-green-700 whitespace-nowrap">
+                          Suprafață:
+                        </label>
+                        <input
+                          type="number"
+                          value={culturaSelectata.hectare || ''}
+                          onChange={(e) => handleUpdateCultura({ ...culturaSelectata, hectare: parseFloat(e.target.value) || 0 })}
+                          className="input-field w-20 text-center font-bold text-green-700 text-sm"
+                          placeholder="100"
+                          min="0"
+                          step="0.1"
+                        />
+                        <span className="text-sm font-medium text-green-700">ha</span>
+                      </div>
+
+                      {/* Butoane acțiuni */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handleAdaugaCultura}
+                          className="btn-primary flex items-center gap-2 text-sm px-3 py-2"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span className="whitespace-nowrap">Cultură nouă</span>
+                        </button>
+
+                        <button
+                          onClick={handleSave}
+                          disabled={saving || !hasChanges}
+                          className={`btn-primary flex items-center gap-2 text-sm px-3 py-2 ${
+                            !hasChanges ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {saving ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Save className="w-4 h-4" />
+                          )}
+                          <span className="whitespace-nowrap">Salvează</span>
+                        </button>
+
+                        {culturi.length > 0 && (
+                          <button
+                            onClick={handleStergeCultura}
+                            className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors border border-red-200 hover:border-red-300 text-sm font-medium"
+                            title="Șterge cultura selectată"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span className="whitespace-nowrap">Șterge</span>
+                          </button>
+                        )}
+
+                        {culturi.length > 0 && user && (
+                          <button
+                            onClick={() => setShowCreateAnModal(true)}
+                            className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl transition-all text-sm font-medium shadow-sm"
+                            title="Creează un an agricol nou bazat pe anul curent"
+                          >
+                            <Calendar className="w-4 h-4" />
+                            <span className="whitespace-nowrap">An Nou</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Status sincronizare */}
+                      <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl">
+                        {hasChanges ? (
+                          <>
+                            <CloudOff className="w-4 h-4 text-amber-500" />
+                            <span className="hidden sm:inline text-sm font-semibold text-amber-700">Modificări nesalvate</span>
+                          </>
+                        ) : culturi.length > 0 ? (
+                          <>
+                            <Cloud className="w-4 h-4 text-green-500" />
+                            <span className="hidden sm:inline text-sm font-semibold text-green-700">Salvat în cloud</span>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                ) : undefined
+              }
             />
           </div>
         )}
@@ -487,6 +517,15 @@ export default function Home() {
         isOpen={showTemplateModal}
         onClose={() => setShowTemplateModal(false)}
         onSelectTemplate={handleSelectTemplate}
+      />
+
+      {/* Modal Creare An Agricol Nou */}
+      <CreateAnAgricolModal
+        isOpen={showCreateAnModal}
+        onClose={() => setShowCreateAnModal(false)}
+        onSuccess={handleCreateAnSuccess}
+        anAgricolCurent={anAgricolCurent}
+        culturiCurente={culturi}
       />
     </div>
   );

@@ -9,6 +9,7 @@ export interface Cultura {
   productie: number; // kg/ha
   pretVanzare: number; // lei/kg
   subventiePerHa: number; // lei/ha (APIA, eco, etc.)
+  anAgricol?: string; // An agricol în format YYYY-YYYY (ex: 2024-2025)
 }
 
 export interface Input {

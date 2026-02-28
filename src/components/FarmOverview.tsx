@@ -8,9 +8,10 @@ import { useMemo } from 'react';
 interface FarmOverviewProps {
   culturi: Cultura[];
   onSelectCultura?: (id: string) => void;
+  toolbarSlot?: React.ReactNode;
 }
 
-export default function FarmOverview({ culturi, onSelectCultura }: FarmOverviewProps) {
+export default function FarmOverview({ culturi, onSelectCultura, toolbarSlot }: FarmOverviewProps) {
   // Calculează statisticile generale
   const stats = useMemo(() => {
     if (culturi.length === 0) {
@@ -136,6 +137,9 @@ export default function FarmOverview({ culturi, onSelectCultura }: FarmOverviewP
           sublinie={`${formateazaNumar(stats.totalMotorina / stats.totalHectare, 1)} L / hectar`}
         />
       </div>
+
+      {/* Toolbar Slot */}
+      {toolbarSlot && <div className="my-6">{toolbarSlot}</div>}
 
       {/* Distribuția Culturilor */}
       <div className="card">

@@ -14,6 +14,7 @@ interface CulturaDB {
   productie: number;
   pret_vanzare: number;
   subventie_per_ha: number;
+  an_agricol: string;
   created_at: string;
   updated_at: string;
 }
@@ -43,11 +44,12 @@ function fromDB(db: CulturaDB): Cultura {
     productie: db.productie,
     pretVanzare: db.pret_vanzare,
     subventiePerHa: db.subventie_per_ha || 0,
+    anAgricol: db.an_agricol,
   };
 }
 
 // Convertește din format aplicație în format DB
-function toDB(cultura: Cultura, userId: string): Omit<CulturaDB, 'created_at' | 'updated_at'> {
+function toDB(cultura: Cultura, userId: string, anAgricol: string): Omit<CulturaDB, 'created_at' | 'updated_at'> {
   return {
     id: cultura.id,
     user_id: userId,
@@ -60,16 +62,18 @@ function toDB(cultura: Cultura, userId: string): Omit<CulturaDB, 'created_at' | 
     productie: cultura.productie,
     pret_vanzare: cultura.pretVanzare,
     subventie_per_ha: cultura.subventiePerHa,
+    an_agricol: cultura.anAgricol || anAgricol, // Folosește an din cultură sau parametrul
   };
 }
 
-// Obține toate culturile utilizatorului curent
-export async function getCulturi(): Promise<Cultura[]> {
+// Obține toate culturile utilizatorului curent pentru un an agricol specific
+export async function getCulturi(anAgricol: string): Promise<Cultura[]> {
   if (!supabase) return [];
 
   const { data, error } = await supabase
     .from('culturi')
     .select('*')
+    .eq('an_agricol', anAgricol)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -99,7 +103,7 @@ export async function getCultura(id: string): Promise<Cultura | null> {
 }
 
 // Salvează o cultură (insert sau update)
-export async function saveCultura(cultura: Cultura): Promise<Cultura | null> {
+export async function saveCultura(cultura: Cultura, anAgricol: string): Promise<Cultura | null> {
   if (!supabase) return null;
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -108,7 +112,7 @@ export async function saveCultura(cultura: Cultura): Promise<Cultura | null> {
     return null;
   }
 
-  const dbData = toDB(cultura, user.id);
+  const dbData = toDB(cultura, user.id, anAgricol);
 
   const { data, error } = await supabase
     .from('culturi')
@@ -147,4 +151,107 @@ export async function isAuthenticated(): Promise<boolean> {
 
   const { data: { user } } = await supabase.auth.getUser();
   return !!user;
+}
+
+// Obține anii agricoli disponibili pentru utilizatorul curent
+export async function getAniAgricoliDisponibili(): Promise<string[]> {
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('culturi')
+    .select('an_agricol')
+    .order('an_agricol', { ascending: false });
+
+  if (error) {
+    console.error('Eroare la încărcarea anilor agricoli:', error);
+    return [];
+  }
+
+  // Extrage anii unici
+  const ani = [...new Set((data || []).map(row => row.an_agricol))];
+  return ani;
+}
+
+// Copiază toate culturile din anul anterior într-un an nou
+// Păstrează structura (lucrări, inputuri, prețuri) dar permite modificarea suprafețelor
+export async function copiazaCulturiInAnNou(
+  anSursa: string,
+  anDestinatie: string,
+  modificariSuprafete?: Record<string, number> // id cultură → hectare noi
+): Promise<boolean> {
+  if (!supabase) return false;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    console.error('Utilizatorul nu este autentificat');
+    return false;
+  }
+
+  // Obține culturile din anul sursă
+  const culturi = await getCulturi(anSursa);
+
+  if (culturi.length === 0) {
+    console.warn('Nu există culturi în anul sursă');
+    return false;
+  }
+
+  // Copiază fiecare cultură în anul nou
+  const promises = culturi.map(async (cultura) => {
+    // Generează ID nou pentru cultura copiată
+    const idNou = crypto.randomUUID();
+
+    // Aplică modificările de suprafață dacă există
+    const hectareNoi = modificariSuprafete?.[cultura.id] ?? cultura.hectare;
+
+    const culturaNou: Cultura = {
+      ...cultura,
+      id: idNou,
+      hectare: hectareNoi,
+      anAgricol: anDestinatie,
+    };
+
+    return saveCultura(culturaNou, anDestinatie);
+  });
+
+  try {
+    await Promise.all(promises);
+    return true;
+  } catch (error) {
+    console.error('Eroare la copierea culturilor:', error);
+    return false;
+  }
+}
+
+// Obține lista de ani agricoli cu statistici
+export async function getAniAgricoliCuStatistici(): Promise<Array<{
+  an: string;
+  numarCulturi: number;
+  totalHectare: number;
+}>> {
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('culturi')
+    .select('an_agricol, hectare')
+    .order('an_agricol', { ascending: false });
+
+  if (error) {
+    console.error('Eroare la încărcarea statisticilor:', error);
+    return [];
+  }
+
+  // Grupează după an agricol
+  const grouped = (data || []).reduce((acc, row) => {
+    if (!acc[row.an_agricol]) {
+      acc[row.an_agricol] = { numarCulturi: 0, totalHectare: 0 };
+    }
+    acc[row.an_agricol].numarCulturi++;
+    acc[row.an_agricol].totalHectare += row.hectare;
+    return acc;
+  }, {} as Record<string, { numarCulturi: number; totalHectare: number }>);
+
+  return Object.entries(grouped).map(([an, stats]) => ({
+    an,
+    ...stats,
+  }));
 }

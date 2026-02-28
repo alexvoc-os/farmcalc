@@ -4,6 +4,7 @@ import './globals.css'
 import CookieConsent from '@/components/CookieConsent'
 import StorageInitializer from '@/components/StorageInitializer'
 import StorageErrorBoundary from '@/components/StorageErrorBoundary'
+import { AnAgricolProvider } from '@/contexts/AnAgricolContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,9 +23,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <StorageErrorBoundary>
           <StorageInitializer />
-          <div className="min-h-screen bg-[#f8f7f4]">
-            {children}
-          </div>
+          <AnAgricolProvider>
+            <div className="min-h-screen bg-[#f8f7f4]">
+              {children}
+            </div>
+          </AnAgricolProvider>
           <CookieConsent />
         </StorageErrorBoundary>
       </body>

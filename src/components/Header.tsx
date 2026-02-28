@@ -5,14 +5,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import AuthModal from './AuthModal';
-import { Sprout, Calculator, RefreshCw, User, LogOut, Crown, RotateCcw, Wrench } from 'lucide-react';
+import { Sprout, Calculator, RefreshCw, User, LogOut, Crown, RotateCcw, Wrench, Calendar } from 'lucide-react';
 import { clearStorageAndReload } from '@/lib/storage-manager';
+import { useAnAgricol } from '@/contexts/AnAgricolContext';
+import { formatAgriculturalYearShort, isCurrentAgriculturalYear } from '@/lib/an-agricol-helpers';
 
 export default function Header() {
   const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // An Agricol Context
+  const { anAgricolCurent, aniDisponibili, setAnAgricolCurent } = useAnAgricol();
 
   useEffect(() => {
     if (!supabase) {
@@ -102,6 +107,24 @@ export default function Header() {
                 );
               })}
             </nav>
+
+            {/* Selector An Agricol */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl border border-gray-200">
+              <Calendar className="w-4 h-4 text-primary-600" />
+              <select
+                value={anAgricolCurent}
+                onChange={(e) => setAnAgricolCurent(e.target.value)}
+                className="bg-transparent border-none text-sm font-semibold text-gray-700 focus:outline-none cursor-pointer"
+                title="Selectează anul agricol"
+              >
+                {aniDisponibili.map(an => (
+                  <option key={an} value={an}>
+                    {formatAgriculturalYearShort(an)}
+                    {isCurrentAgriculturalYear(an) ? ' 📅' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Auth buttons */}
             <div className="flex items-center gap-3">
