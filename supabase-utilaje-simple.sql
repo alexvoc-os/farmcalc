@@ -29,6 +29,7 @@ CREATE TABLE implementele (
   nume TEXT NOT NULL,
   tip TEXT NOT NULL,
   latime_lucru NUMERIC(10,2),
+  numar_randuri INTEGER, -- Număr rânduri (pentru semănători, plantatoare)
   greutate NUMERIC(10,2),
   is_global BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
