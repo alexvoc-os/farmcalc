@@ -65,11 +65,11 @@ function utilajFromDB(db: UtilajDB): Utilaj {
   };
 }
 
-function utilajToDB(utilaj: Utilaj, userId: string): Omit<UtilajDB, 'created_at' | 'updated_at'> {
+function utilajToDB(utilaj: Utilaj, userId: string): Omit<UtilajDB, 'created_at' | 'updated_at' | 'nume'> {
   return {
     id: utilaj.id,
     user_id: userId,
-    nume: `${utilaj.marca} ${utilaj.model}`, // Generat automat din marca + model
+    // Câmpul 'nume' este GENERATED în Supabase - nu trebuie setat manual
     marca: utilaj.marca,
     model: utilaj.model,
     putere_cp: utilaj.putereCP,
