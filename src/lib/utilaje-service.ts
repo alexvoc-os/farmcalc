@@ -338,7 +338,7 @@ export async function getLucrari(): Promise<LucrareAgricolaPredefinita[]> {
     const { data, error } = await supabase
       .from('lucrari_custom')
       .select('*')
-      .order('ordine', { ascending: true });
+      .order('created_at', { ascending: false }); // Sortare după dată (cele mai noi primele)
 
     if (error) {
       console.error('Eroare la încărcarea lucrărilor:', error);
