@@ -17,14 +17,15 @@ interface AnAgricolProviderProps {
 }
 
 export function AnAgricolProvider({ children }: AnAgricolProviderProps) {
-  // State pentru anul agricol selectat (default = anul curent)
+  // State pentru anul agricol selectat (default = 2024-2025)
   const [anAgricolCurent, setAnAgricolCurentState] = useState<string>(() => {
     // Încearcă să citești din localStorage
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('farmcalc_an_agricol_curent');
       if (saved) return saved;
     }
-    return getCurrentAgriculturalYear();
+    // TEMPORARY: Pornim cu 2024-2025 hardcodat
+    return '2024-2025';
   });
 
   // State pentru lista de ani disponibili
@@ -40,7 +41,8 @@ export function AnAgricolProvider({ children }: AnAgricolProviderProps) {
 
   // Funcție pentru refresh lista ani disponibili
   const refreshAniDisponibili = () => {
-    const ani = getAvailableAgriculturalYears(5, true);
+    // Doar 1 an pentru început (2024-2025) + anul viitor (2025-2026)
+    const ani = getAvailableAgriculturalYears(1, true);
     setAniDisponibili(ani);
   };
 

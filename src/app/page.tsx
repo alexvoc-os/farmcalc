@@ -142,6 +142,10 @@ export default function Home() {
   // Hook pentru an agricol
   const { anAgricolCurent } = useAnAgricol();
 
+  // State pentru detectarea anului gol
+  const [anulAnteriorAreCulturi, setAnulAnteriorAreCulturi] = useState(false);
+  const [verificatAnGol, setVerificatAnGol] = useState(false);
+
   // Verifică autentificarea și încarcă culturile
   useEffect(() => {
     if (!supabase) {
@@ -225,6 +229,36 @@ export default function Home() {
       subscription.unsubscribe();
     };
   }, [anAgricolCurent]); // Reîncarcă culturile când se schimbă anul agricol
+
+  // Verifică dacă anul curent e gol și anul anterior are culturi
+  useEffect(() => {
+    const verificaAnGol = async () => {
+      if (!user || culturi.length > 0) {
+        setVerificatAnGol(false);
+        return;
+      }
+
+      // Dacă anul curent e gol, verifică dacă anul anterior are culturi
+      const [startYear] = anAgricolCurent.split('-').map(Number);
+      const anAnterior = `${startYear - 1}-${startYear}`;
+
+      try {
+        const culturiAnAnterior = await getCulturi(anAnterior);
+        if (culturiAnAnterior.length > 0) {
+          setAnulAnteriorAreCulturi(true);
+          setVerificatAnGol(true);
+        } else {
+          setAnulAnteriorAreCulturi(false);
+          setVerificatAnGol(false);
+        }
+      } catch (error) {
+        console.error('Eroare verificare an anterior:', error);
+        setVerificatAnGol(false);
+      }
+    };
+
+    verificaAnGol();
+  }, [user, culturi, anAgricolCurent]);
 
   // Actualizează cultura curentă
   const handleUpdateCultura = useCallback((culturaActualizata: Cultura) => {
@@ -334,6 +368,56 @@ export default function Home() {
                   Conectează-te pentru a salva culturile în cloud și a le accesa de pe orice dispozitiv.
                 </p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Banner sugestie creare an nou când anul e gol */}
+        {user && verificatAnGol && anulAnteriorAreCulturi && (
+          <div className="mb-8 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-2xl p-6 shadow-lg">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-4 flex-1">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-amber-900 text-lg mb-2">
+                    📅 An agricol nou disponibil!
+                  </h3>
+                  <p className="text-amber-800 mb-3 leading-relaxed">
+                    Ai selectat <strong>{anAgricolCurent}</strong> dar nu există culturi încă.
+                    Avem culturi salvate din anul anterior care pot fi copiate automat.
+                  </p>
+                  <ul className="text-sm text-amber-700 space-y-1 mb-4">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      Toate lucrările și prețurile vor fi copiate
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      Poți modifica suprafețele pentru fiecare cultură
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      Prețurile pot fi actualizate după creare
+                    </li>
+                  </ul>
+                  <button
+                    onClick={() => setShowCreateAnModal(true)}
+                    className="btn-primary flex items-center gap-2 shadow-md hover:shadow-lg transition-shadow"
+                  >
+                    <Plus className="w-5 h-5" />
+                    <span>Creează {anAgricolCurent} acum</span>
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={() => setVerificatAnGol(false)}
+                className="text-amber-600 hover:text-amber-800 p-1 rounded-lg hover:bg-amber-100 transition-colors"
+                title="Ascunde mesajul"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
           </div>
         )}

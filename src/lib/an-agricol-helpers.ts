@@ -26,11 +26,13 @@ export function getCurrentAgriculturalYear(): string {
 
 /**
  * Generează lista ultimilor N ani agricoli
- * @param count - numărul de ani de generat (default: 5)
+ * @param count - numărul de ani de generat (default: 1 - doar anul curent)
  * @param includeNext - dacă să includă și anul viitor (default: true)
  */
-export function getAvailableAgriculturalYears(count: number = 5, includeNext: boolean = true): string[] {
-  const currentYear = getCurrentAgriculturalYear();
+export function getAvailableAgriculturalYears(count: number = 1, includeNext: boolean = true): string[] {
+  // TEMPORARY: Pornim cu 2024-2025 în loc de anul calculat automat
+  // pentru a rezolva problema că culturile existente sunt în 2024-2025
+  const currentYear = '2024-2025'; // Hardcodat temporar
   const [startYear] = currentYear.split('-').map(Number);
 
   const years: string[] = [];
@@ -40,11 +42,8 @@ export function getAvailableAgriculturalYears(count: number = 5, includeNext: bo
     years.push(`${startYear + 1}-${startYear + 2}`);
   }
 
-  // Adaugă anul curent și anii anteriori
-  for (let i = 0; i < count; i++) {
-    const year = startYear - i;
-    years.push(`${year}-${year + 1}`);
-  }
+  // Adaugă anul curent (doar 1 an pentru început)
+  years.push(currentYear);
 
   return years;
 }
