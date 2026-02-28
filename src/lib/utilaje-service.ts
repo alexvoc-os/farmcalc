@@ -4,7 +4,6 @@
  */
 
 import { Utilaj, Implement, LucrareAgricolaPredefinita } from '@/types';
-import { TRACTOARE_PREDEFINITE, IMPLEMENTELE_PREDEFINITE } from './seed-data';
 import { supabase } from './supabase';
 
 // === INTERFEȚE DATABASE ===
