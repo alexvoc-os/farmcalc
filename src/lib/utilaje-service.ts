@@ -131,51 +131,47 @@ function lucrareToDB(lucrare: LucrareAgricolaPredefinita, userId: string): Omit<
 // === UTILAJE (TRACTOARE) ===
 
 /**
- * TEMPORARY: Returnează doar predefinite până la crearea tabelului în Supabase
  * Obține toate utilajele (predefinite + custom user)
  */
 export async function getUtilaje(): Promise<Utilaj[]> {
-  // TEMPORARY: Dezactivat query-ul până la crearea tabelului 'utilaje' în Supabase
-  return [...TRACTOARE_PREDEFINITE];
+  if (!supabase) {
+    // Fallback la predefinite dacă Supabase nu e disponibil
+    return [...TRACTOARE_PREDEFINITE];
+  }
 
-  // if (!supabase) {
-  //   // Fallback la predefinite dacă Supabase nu e disponibil
-  //   return [...TRACTOARE_PREDEFINITE];
-  // }
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
 
-  // try {
-  //   const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      // Utilizator neautentificat - returnează doar predefinite
+      return [...TRACTOARE_PREDEFINITE];
+    }
 
-  //   if (!user) {
-  //     // Utilizator neautentificat - returnează doar predefinite
-  //     return [...TRACTOARE_PREDEFINITE];
-  //   }
+    const { data, error } = await supabase
+      .from('utilaje')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  //   const { data, error } = await supabase
-  //     .from('utilaje')
-  //     .select('*')
-  //     .order('created_at', { ascending: false });
+    if (error) {
+      console.error('Eroare la încărcarea utilajelor:', error);
+      return [...TRACTOARE_PREDEFINITE];
+    }
 
-  //   if (error) {
-  //     console.error('Eroare la încărcarea utilajelor:', error);
-  //     return [...TRACTOARE_PREDEFINITE];
-  //   }
+    const utilajeCustom = (data || []).map(utilajFromDB);
 
-  //   const utilajeCustom = (data || []).map(utilajFromDB);
+    // Returnează predefinite + custom (fără duplicate)
+    const toateUtilajele = [...TRACTOARE_PREDEFINITE];
+    utilajeCustom.forEach(u => {
+      if (!toateUtilajele.find(existing => existing.id === u.id)) {
+        toateUtilajele.push(u);
+      }
+    });
 
-  //   // Returnează predefinite + custom (fără duplicate)
-  //   const toateUtilajele = [...TRACTOARE_PREDEFINITE];
-  //   utilajeCustom.forEach(u => {
-  //     if (!toateUtilajele.find(existing => existing.id === u.id)) {
-  //       toateUtilajele.push(u);
-  //     }
-  //   });
-
-  //   return toateUtilajele;
-  // } catch (error) {
-  //   console.error('Eroare la citirea utilajelor:', error);
-  //   return [...TRACTOARE_PREDEFINITE];
-  // }
+    return toateUtilajele;
+  } catch (error) {
+    console.error('Eroare la citirea utilajelor:', error);
+    return [...TRACTOARE_PREDEFINITE];
+  }
 }
 
 /**
@@ -236,48 +232,44 @@ export async function deleteUtilaj(id: string): Promise<boolean> {
 // === IMPLEMENTELE ===
 
 /**
- * TEMPORARY: Returnează doar predefinite până la crearea tabelului în Supabase
  * Obține toate implementele (predefinite + custom user)
  */
 export async function getImplementele(): Promise<Implement[]> {
-  // TEMPORARY: Dezactivat query-ul până la crearea tabelului 'implementele' în Supabase
-  return [...IMPLEMENTELE_PREDEFINITE];
+  if (!supabase) {
+    return [...IMPLEMENTELE_PREDEFINITE];
+  }
 
-  // if (!supabase) {
-  //   return [...IMPLEMENTELE_PREDEFINITE];
-  // }
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
 
-  // try {
-  //   const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return [...IMPLEMENTELE_PREDEFINITE];
+    }
 
-  //   if (!user) {
-  //     return [...IMPLEMENTELE_PREDEFINITE];
-  //   }
+    const { data, error } = await supabase
+      .from('implementele')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  //   const { data, error } = await supabase
-  //     .from('implementele')
-  //     .select('*')
-  //     .order('created_at', { ascending: false });
+    if (error) {
+      console.error('Eroare la încărcarea implementelor:', error);
+      return [...IMPLEMENTELE_PREDEFINITE];
+    }
 
-  //   if (error) {
-  //     console.error('Eroare la încărcarea implementelor:', error);
-  //     return [...IMPLEMENTELE_PREDEFINITE];
-  //   }
+    const implementeleCustom = (data || []).map(implementFromDB);
 
-  //   const implementeleCustom = (data || []).map(implementFromDB);
+    const toateImplementele = [...IMPLEMENTELE_PREDEFINITE];
+    implementeleCustom.forEach(i => {
+      if (!toateImplementele.find(existing => existing.id === i.id)) {
+        toateImplementele.push(i);
+      }
+    });
 
-  //   const toateImplementele = [...IMPLEMENTELE_PREDEFINITE];
-  //   implementeleCustom.forEach(i => {
-  //     if (!toateImplementele.find(existing => existing.id === i.id)) {
-  //       toateImplementele.push(i);
-  //     }
-  //   });
-
-  //   return toateImplementele;
-  // } catch (error) {
-  //   console.error('Eroare la citirea implementelor:', error);
-  //   return [...IMPLEMENTELE_PREDEFINITE];
-  // }
+    return toateImplementele;
+  } catch (error) {
+    console.error('Eroare la citirea implementelor:', error);
+    return [...IMPLEMENTELE_PREDEFINITE];
+  }
 }
 
 /**
@@ -338,39 +330,35 @@ export async function deleteImplement(id: string): Promise<boolean> {
 // === LUCRĂRI AGRICOLE ===
 
 /**
- * TEMPORARY: Returnează array gol până la crearea tabelului în Supabase
  * Obține toate lucrările utilizatorului
  */
 export async function getLucrari(): Promise<LucrareAgricolaPredefinita[]> {
-  // TEMPORARY: Dezactivat până la crearea tabelului 'lucrari' în Supabase
-  return [];
+  if (!supabase) {
+    return [];
+  }
 
-  // if (!supabase) {
-  //   return [];
-  // }
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
 
-  // try {
-  //   const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return [];
+    }
 
-  //   if (!user) {
-  //     return [];
-  //   }
+    const { data, error } = await supabase
+      .from('lucrari_custom')
+      .select('*')
+      .order('ordine', { ascending: true });
 
-  //   const { data, error } = await supabase
-  //     .from('lucrari')
-  //     .select('*')
-  //     .order('created_at', { ascending: false });
+    if (error) {
+      console.error('Eroare la încărcarea lucrărilor:', error);
+      return [];
+    }
 
-  //   if (error) {
-  //     console.error('Eroare la încărcarea lucrărilor:', error);
-  //     return [];
-  //   }
-
-  //   return (data || []).map(lucrareFromDB);
-  // } catch (error) {
-  //   console.error('Eroare la citirea lucrărilor:', error);
-  //   return [];
-  // }
+    return (data || []).map(lucrareFromDB);
+  } catch (error) {
+    console.error('Eroare la citirea lucrărilor:', error);
+    return [];
+  }
 }
 
 /**
@@ -389,7 +377,7 @@ export async function saveLucrare(lucrare: LucrareAgricolaPredefinita): Promise<
     const dbData = lucrareToDB(lucrare, user.id);
 
     const { error } = await supabase
-      .from('lucrari')
+      .from('lucrari_custom')
       .upsert(dbData, { onConflict: 'id' });
 
     if (error) {
@@ -412,7 +400,7 @@ export async function deleteLucrare(id: string): Promise<boolean> {
 
   try {
     const { error } = await supabase
-      .from('lucrari')
+      .from('lucrari_custom')
       .delete()
       .eq('id', id);
 

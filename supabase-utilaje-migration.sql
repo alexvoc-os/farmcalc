@@ -1,137 +1,122 @@
--- =============================================
--- MIGRARE SUPABASE PENTRU UTILAJE
--- Adaugă tabele pentru utilaje, implementele și lucrări
--- Rulează acest script în Supabase SQL Editor
--- =============================================
+-- ================================================
+-- MANAGEMENT UTILAJE ȘI LUCRĂRI AGRICOLE
+-- Data: 2026-02-28
+-- Scop: Tabele pentru salvarea utilajelor și lucrărilor per utilizator
+-- ================================================
 
--- Tabel pentru utilaje (tractoare)
+-- 1. TABEL UTILAJE (Tractoare)
 CREATE TABLE IF NOT EXISTS utilaje (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  id TEXT PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   nume TEXT NOT NULL,
   marca TEXT NOT NULL,
   model TEXT NOT NULL,
-  putere_cp INTEGER NOT NULL DEFAULT 0,
-  an_fabricatie INTEGER NOT NULL DEFAULT 2020,
-  consum_mediu_l_ora NUMERIC DEFAULT NULL,
-  valoare NUMERIC DEFAULT NULL,
-  is_global BOOLEAN NOT NULL DEFAULT false,
+  putere_cp INTEGER NOT NULL,
+  an_fabricatie INTEGER,
+  consum_mediu_l_ora NUMERIC(10,2),
+  is_global BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Index pentru căutări rapide per utilizator
-CREATE INDEX IF NOT EXISTS utilaje_user_id_idx ON utilaje(user_id);
-
--- RLS pentru utilaje
-ALTER TABLE utilaje ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Utilizatorii pot vedea propriile utilaje"
-  ON utilaje FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Utilizatorii pot adăuga utilaje"
-  ON utilaje FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Utilizatorii pot actualiza propriile utilaje"
-  ON utilaje FOR UPDATE
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Utilizatorii pot șterge propriile utilaje"
-  ON utilaje FOR DELETE
-  USING (auth.uid() = user_id);
-
--- Tabel pentru implementele agricole
+-- 2. TABEL IMPLEMENTELE
 CREATE TABLE IF NOT EXISTS implementele (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  id TEXT PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   nume TEXT NOT NULL,
   tip TEXT NOT NULL,
-  latime_lucru NUMERIC DEFAULT NULL,
-  numar_randuri INTEGER DEFAULT NULL,
-  greutate NUMERIC DEFAULT NULL,
-  is_global BOOLEAN NOT NULL DEFAULT false,
+  latime_lucru NUMERIC(10,2),
+  greutate NUMERIC(10,2),
+  is_global BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Index pentru căutări rapide per utilizator
-CREATE INDEX IF NOT EXISTS implementele_user_id_idx ON implementele(user_id);
-
--- RLS pentru implementele
-ALTER TABLE implementele ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Utilizatorii pot vedea propriile implementele"
-  ON implementele FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Utilizatorii pot adăuga implementele"
-  ON implementele FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Utilizatorii pot actualiza propriile implementele"
-  ON implementele FOR UPDATE
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Utilizatorii pot șterge propriile implementele"
-  ON implementele FOR DELETE
-  USING (auth.uid() = user_id);
-
--- Tabel pentru lucrări agricole predefinite
-CREATE TABLE IF NOT EXISTS lucrari (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+-- 3. TABEL LUCRĂRI CUSTOM
+CREATE TABLE IF NOT EXISTS lucrari_custom (
+  id TEXT PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   nume TEXT NOT NULL,
-  utilaj_id UUID REFERENCES utilaje(id) ON DELETE CASCADE NOT NULL,
-  implement_id UUID REFERENCES implementele(id) ON DELETE CASCADE NOT NULL,
-  consum_motorina NUMERIC NOT NULL DEFAULT 0,
-  descriere TEXT DEFAULT NULL,
+  tip TEXT NOT NULL,
+  descriere TEXT,
+  is_global BOOLEAN DEFAULT false,
+  ordine INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Index pentru căutări rapide
-CREATE INDEX IF NOT EXISTS lucrari_user_id_idx ON lucrari(user_id);
-CREATE INDEX IF NOT EXISTS lucrari_utilaj_id_idx ON lucrari(utilaj_id);
-CREATE INDEX IF NOT EXISTS lucrari_implement_id_idx ON lucrari(implement_id);
+-- ================================================
+-- ROW LEVEL SECURITY (RLS)
+-- ================================================
 
--- RLS pentru lucrări
-ALTER TABLE lucrari ENABLE ROW LEVEL SECURITY;
+ALTER TABLE utilaje ENABLE ROW LEVEL SECURITY;
+ALTER TABLE implementele ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lucrari_custom ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Utilizatorii pot vedea propriile lucrări"
-  ON lucrari FOR SELECT
-  USING (auth.uid() = user_id);
+-- Policies pentru UTILAJE
+DROP POLICY IF EXISTS "Users can view own utilaje" ON utilaje;
+DROP POLICY IF EXISTS "Users can insert own utilaje" ON utilaje;
+DROP POLICY IF EXISTS "Users can update own utilaje" ON utilaje;
+DROP POLICY IF EXISTS "Users can delete own utilaje" ON utilaje;
 
-CREATE POLICY "Utilizatorii pot adăuga lucrări"
-  ON lucrari FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can view own utilaje" ON utilaje FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own utilaje" ON utilaje FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own utilaje" ON utilaje FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own utilaje" ON utilaje FOR DELETE USING (auth.uid() = user_id);
 
-CREATE POLICY "Utilizatorii pot actualiza propriile lucrări"
-  ON lucrari FOR UPDATE
-  USING (auth.uid() = user_id);
+-- Policies pentru IMPLEMENTELE
+DROP POLICY IF EXISTS "Users can view own implementele" ON implementele;
+DROP POLICY IF EXISTS "Users can insert own implementele" ON implementele;
+DROP POLICY IF EXISTS "Users can update own implementele" ON implementele;
+DROP POLICY IF EXISTS "Users can delete own implementele" ON implementele;
 
-CREATE POLICY "Utilizatorii pot șterge propriile lucrări"
-  ON lucrari FOR DELETE
-  USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own implementele" ON implementele FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own implementele" ON implementele FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own implementele" ON implementele FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own implementele" ON implementele FOR DELETE USING (auth.uid() = user_id);
 
--- Trigger pentru updated_at pe utilaje
-DROP TRIGGER IF EXISTS update_utilaje_updated_at ON utilaje;
-CREATE TRIGGER update_utilaje_updated_at
-  BEFORE UPDATE ON utilaje
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+-- Policies pentru LUCRĂRI CUSTOM
+DROP POLICY IF EXISTS "Users can view own lucrari" ON lucrari_custom;
+DROP POLICY IF EXISTS "Users can insert own lucrari" ON lucrari_custom;
+DROP POLICY IF EXISTS "Users can update own lucrari" ON lucrari_custom;
+DROP POLICY IF EXISTS "Users can delete own lucrari" ON lucrari_custom;
 
--- Trigger pentru updated_at pe implementele
-DROP TRIGGER IF EXISTS update_implementele_updated_at ON implementele;
-CREATE TRIGGER update_implementele_updated_at
-  BEFORE UPDATE ON implementele
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+CREATE POLICY "Users can view own lucrari" ON lucrari_custom FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own lucrari" ON lucrari_custom FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own lucrari" ON lucrari_custom FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own lucrari" ON lucrari_custom FOR DELETE USING (auth.uid() = user_id);
 
--- Trigger pentru updated_at pe lucrări
-DROP TRIGGER IF EXISTS update_lucrari_updated_at ON lucrari;
-CREATE TRIGGER update_lucrari_updated_at
-  BEFORE UPDATE ON lucrari
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+-- ================================================
+-- INDEXES pentru performanță
+-- ================================================
+
+CREATE INDEX IF NOT EXISTS idx_utilaje_user_id ON utilaje(user_id);
+CREATE INDEX IF NOT EXISTS idx_implementele_user_id ON implementele(user_id);
+CREATE INDEX IF NOT EXISTS idx_lucrari_custom_user_id ON lucrari_custom(user_id);
+
+-- ================================================
+-- VERIFICARE TABELE
+-- ================================================
+
+SELECT
+  'utilaje' as tabel,
+  COUNT(*) as numar_inregistrari
+FROM utilaje
+UNION ALL
+SELECT
+  'implementele' as tabel,
+  COUNT(*) as numar_inregistrari
+FROM implementele
+UNION ALL
+SELECT
+  'lucrari_custom' as tabel,
+  COUNT(*) as numar_inregistrari
+FROM lucrari_custom;
+
+-- ================================================
+-- INSTRUCȚIUNI:
+-- 1. Deschide Supabase Dashboard → SQL Editor
+-- 2. Creează New Query
+-- 3. Copiază și Rulează acest script (Cmd+Enter)
+-- 4. Verifică că tabelele au fost create cu succes
+-- ================================================
